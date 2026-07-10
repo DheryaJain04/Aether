@@ -9,8 +9,23 @@
 <body>
     <h1>Search Results</h1>
     <h2>
-        You searched for:
         <%= query %>
     </h2>
+    <hr>
+    <% papers.forEach(paper => { %>
+        <div>
+            <h3>
+                <%= paper.display_name %>
+            </h3>
+
+            <p>
+                Year :
+                <%= paper.publication_year %>
+            </p>
+            <hr>
+        </div>
+    <% }) %>
 </body>
 </html>
+
+<!---->
