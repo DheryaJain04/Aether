@@ -12,15 +12,11 @@ body{
 
 .hero{
     min-height:100vh;
-
     display:flex;
     flex-direction:column;
-
     justify-content:center;
     align-items:center;
-
     text-align:center;
-
     padding:20px;
 }
 
@@ -48,43 +44,31 @@ body{
 
 .search-box{
     margin-top:40px;
-
     display:flex;
     gap:15px;
-
     width:100%;
     max-width:750px;
 }
 
 .search-box input{
     flex:1;
-
     padding:16px 20px;
-
     border:none;
     border-radius:12px;
-
     font-size:16px;
-
     outline:none;
-
     box-shadow:0 5px 15px rgba(0,0,0,0.08);
 }
 
 .search-box button{
     padding:16px 28px;
-
     border:none;
     border-radius:12px;
-
     background:#1D4ED8;
     color:white;
-
     font-size:16px;
     font-weight:600;
-
     cursor:pointer;
-
     transition:0.25s;
 }
 

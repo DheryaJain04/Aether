@@ -3,29 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
+    <title>Search Results | Aether</title>
+    <link rel="stylesheet" href="/css/search.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <h1>Search Results</h1>
-    <h2>
-        <%= query %>
-    </h2>
-    <hr>
-    <% papers.forEach(paper => { %>
-        <div>
-            <h3>
-                <%= paper.display_name %>
-            </h3>
 
-            <p>
-                Year :
-                <%= paper.publication_year %>
-            </p>
-            <hr>
+<div class="results-container">
+
+    <header class="top-bar">
+        <a href="/">← Back to Search</a>
+        <h2>Aether</h2>
+    </header>
+
+    <section class="results-header">
+        <h1>Showing results for "<%= query %>"</h1>
+        <p>
+            <%= papers.length %> Research Papers<br>
+            Ranked using <strong>Aether Relevance Metric</strong>
+        </p>
+    </section>
+
+    <hr>
+
+    <% if(papers.length===0){ %>
+        <div class="empty-state">
+            <h2>No research papers found.</h2>
+            <p>Try searching with broader keywords.</p>
         </div>
+    <% } %>
+
+    <% papers.forEach(paper=>{ %>
+
+    <div class="paper-wrapper">
+
+        <div class="score-badge">
+            <span>Aether Score</span>
+            <strong><%= paper.relevance %>%</strong>
+        </div>
+
+        <article class="paper-card">
+
+            <h2 class="paper-title">
+                <a href="<%= paper.paperUrl %>" target="_blank">
+                    <%= paper.title %>
+                </a>
+            </h2>
+
+            <% if(paper.authors){ %>
+            <p class="authors">
+                <%= paper.authors %>
+            </p>
+            <% } %>
+
+            <div class="meta">
+                <span class="journal">
+                    <%= paper.journal %> • <%= paper.year %>
+                </span>
+                <% if(paper.openAccess){ %>
+                <span class="oa-badge">
+                    🟢 Open Access
+                </span>
+                <% } %>
+            </div>
+
+            <% if(paper.doi){ %>
+            <a
+                href="https://doi.org/<%= paper.doi %>"
+                target="_blank"
+                class="doi">
+                DOI • <%= paper.doi %>
+            </a>
+            <% } %>
+
+            <div class="section">
+                <h4>Abstract</h4>
+                <p class="abstract">
+                    <%= paper.abstract %>
+                </p>
+            </div>
+
+            <div class="section">
+                <h4>Keywords</h4>
+                <div class="keyword-list">
+                    <% paper.keywords.forEach(keyword=>{ %>
+                    <span class="keyword">
+                        <%= keyword %>
+                    </span>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a
+                    href="<%= paper.paperUrl %>"
+                    target="_blank"
+                    class="read-btn">
+                    View Paper ↗
+                </a>
+                <button class="save-btn">
+                    ⭐ Save
+                </button>
+            </div>
+        </article>
+
+    </div>
     <% }) %>
+</div>
+
 </body>
 </html>
-
-<!---->
