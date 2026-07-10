@@ -18,10 +18,18 @@
             Discover, organize and understand academic research
             from trusted scholarly sources.
         </p>
-        <div class="search-box">
-             <input type="text" id="searchInput" placeholder="Search 'Large Language Models'...">
-             <button>Search Papers</button>
-        </div>
+        <form class="search-box" action="/search" method="GET">
+            <input
+            id="searchInput"
+            name="q"
+            type="text"
+            placeholder='Search "Large Language Models"...'
+            required
+            >
+            <button type="submit">
+                Search Papers
+            </button>
+        </form>
     </main>
     <script src="/js/main.js"></script>
 </body>
