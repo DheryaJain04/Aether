@@ -1,0 +1,32 @@
+.top-bar{
+    margin-bottom:40px;
+}
+
+.logo{
+    font-family:"Outfit",sans-serif;
+    color:#2563EB;
+    font-size:40px;
+    margin-bottom:18px;
+}
+
+.breadcrumb{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    font-size:15px;
+}
+
+.breadcrumb a{
+    text-decoration:none;
+    color:#2563EB;
+    transition:.2s;
+}
+
+.breadcrumb a:hover{
+    color:#1D4ED8;
+}
+
+.current{
+    color:#64748B;
+    font-weight:600;
+}

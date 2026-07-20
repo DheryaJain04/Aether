@@ -99,8 +99,7 @@
 
             <div class="actions">
                 <a
-                    href="<%= paper.paperUrl %>"
-                    target="_blank"
+                    href="/paper/<%= paper.id %>?q=<%= encodeURIComponent(query) %>"
                     class="read-btn">
                     View Paper ↗
                 </a>

@@ -1,4 +1,4 @@
-// Controller who calls axios and gets data from axios 
+// Controller that calls axios and gets data from axios 
 // Is called inside search route
 const axios = require("axios");
 
@@ -23,7 +23,7 @@ async function searchPapers(req, res) {
                 : "");
 
             return {
-                id: paper.id,
+                id: paper.id.split("/").pop(),
                 title: paper.display_name,
                 authors: displayedAuthors,
                 year: paper.publication_year,
@@ -45,6 +45,7 @@ async function searchPapers(req, res) {
             };
         });
 
+        //renders search.ejs with query and papers
         res.render("search", {
             query,
             papers

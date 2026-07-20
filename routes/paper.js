@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/:id", (req, res) => {
-    res.render("paper");
-});
+const paperController = require("../controllers/paperController");
+
+router.get("/:id/summary", paperController.generateSummary);
+router.get("/:id/keywords",paperController.generateKeywords);
+router.get("/:id", paperController.showPaper);
 
 module.exports = router;

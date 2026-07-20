@@ -1,11 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Papers</title>
+    <title><%= paper.title %> | Aether</title>
+    <link rel="stylesheet" href="/css/paper.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <h1>Paper Details</h1>
+<header class="top-bar">
+    <h1 class="logo">Aether</h1>
+
+    <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <a href="/search?q=<%= encodeURIComponent(searchQuery) %>">
+            Search Results
+        </a>
+        <span>/</span>
+        <span class="current">
+            Paper
+        </span>
+    </nav>
+</header>
+
+<hr>
+
+<h2>
+<%= paper.title %>
+</h2>
+
+<p>
+<%= paper.authors %>
+</p>
+
+<p>
+<%= paper.journal %> • <%= paper.year %>
+</p>
+
+<% if(paper.openAccess){ %>
+<p>
+🟢 Open Access
+</p>
+<% } %>
+
+<% if(paper.doi){ %>
+<p>
+DOI • <%= paper.doi %>
+</p>
+<% } %>
+
+<hr>
+
+<h3>
+Aether Summary
+</h3>
+<p id="summary">
+    <%= paper.summary %>
+</p>
+
+<hr>
+
+<h3>
+Abstract
+</h3>
+<p>
+<%= paper.abstract %>
+</p>
+
+<hr>
+
+<h3>
+Keywords
+</h3>
+<div class="keyword-list" id="keyword-list">
+    <span class="keyword">Generating Keywords...</span>
+</div>
+
+<hr>
+
+<h3>
+Citations
+</h3>
+
+<p>
+APA
+</p>
+<p>
+<%= paper.citations.apa %>
+</p>
+
+<br>
+
+<p>
+IEEE
+</p>
+<p>
+<%= paper.citations.ieee %>
+</p>
+
+<hr>
+
+<h3>
+Ask Aether
+</h3>
+<p>
+Coming Soon...
+</p>
+<script>
+const paperId = "<%= paper.id %>";
+
+async function loadSummary(){
+    try{
+        const response = await fetch(`/paper/${paperId}/summary`);
+        const data = await response.json();
+        document.getElementById("summary").innerText = data.summary;
+    }
+    catch(err){
+        document.getElementById("summary").innerText =
+            "Unable to generate summary.";
+    }
+}
+
+async function loadKeywords(){
+    try{
+        const response = await fetch(`/paper/${paperId}/keywords`);
+        const data = await response.json();
+        const keywordList = document.getElementById("keyword-list");
+        keywordList.innerHTML = "";
+        data.keywords.forEach(keyword=>{
+            const span = document.createElement("span");
+            span.className = "keyword";
+            span.innerText = keyword;
+            keywordList.appendChild(span);
+        });
+    }catch(err){
+        document.getElementById("keyword-list").innerText =
+            "Unable to generate keywords.";
+    }
+}
+
+loadSummary();
+loadKeywords();
+
+</script>
 </body>
 </html>
