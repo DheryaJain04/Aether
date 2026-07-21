@@ -79,22 +79,23 @@
             </a>
             <% } %>
 
-            <div class="section">
+            <% if(paper.abstract){ %>
+            <div class="section abstract-section">
                 <h4>Abstract</h4>
                 <p class="abstract">
                     <%= paper.abstract %>
                 </p>
             </div>
+            <% } %>
 
-            <div class="section">
-                <h4>Keywords</h4>
-                <div class="keyword-list">
-                    <% paper.keywords.forEach(keyword=>{ %>
-                    <span class="keyword">
-                        <%= keyword %>
-                    </span>
-                    <% }) %>
-                </div>
+            <div class="paper-stats">
+                <span>
+                    <%= paper.publicationType %>
+                </span>
+                <span class="stat-separator">•</span>
+                <span>
+                    Cited by <%= paper.citedBy.toLocaleString() %>
+                </span>
             </div>
 
             <div class="actions">

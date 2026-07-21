@@ -105,12 +105,29 @@ IEEE
 
 <hr>
 
-<h3>
-Ask Aether
-</h3>
-<p>
-Coming Soon...
-</p>
+<h3>Ask Aether</h3>
+
+<div class="chat-container">
+    <div id="chat-messages" class="chat-messages">
+        <div class="aether-message">
+            Ask me anything about this research paper.
+        </div>
+    </div>
+
+    <form id="chat-form" class="chat-form">
+        <input
+            type="text"
+            id="chat-input"
+            placeholder="Ask a question about this paper..."
+            autocomplete="off"
+            required
+        >
+        <button type="submit">
+            Ask
+        </button>
+    </form>
+</div>
+
 <script>
 const paperId = "<%= paper.id %>";
 
@@ -143,6 +160,67 @@ async function loadKeywords(){
             "Unable to generate keywords.";
     }
 }
+
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
+
+chatForm.addEventListener("submit",async(event)=>{
+    event.preventDefault();
+
+    const question = chatInput.value.trim();
+
+    if(!question){
+        return;
+    }
+
+    const userMessage = document.createElement("div");
+    userMessage.className = "user-message";
+    userMessage.innerText = question;
+    chatMessages.appendChild(userMessage);
+
+    chatInput.value = "";
+
+    const loadingMessage = document.createElement("div");
+    loadingMessage.className = "aether-message";
+    loadingMessage.innerText = "Aether is reading the paper...";
+    chatMessages.appendChild(loadingMessage);
+
+    chatInput.disabled = true;
+
+    try{
+        const response = await fetch(
+            `/paper/${paperId}/chat`,
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    question
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok){
+            loadingMessage.innerText =
+                data.error ||
+                "Unable to answer your question.";
+
+            return;
+        }
+
+        loadingMessage.innerText = data.answer;
+    }catch(err){
+        loadingMessage.innerText =
+            "Unable to connect to Aether right now.";
+    }finally{
+        chatInput.disabled = false;
+        chatInput.focus();
+    }
+});
 
 loadSummary();
 loadKeywords();

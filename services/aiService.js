@@ -1,65 +1,45 @@
+require("dotenv").config();
 const axios = require("axios");
+const {GoogleGenAI} = require("@google/genai");
+const Groq = require("groq-sdk");
 
-async function getSummary(title, abstract){
-    try{
+const gemini = new GoogleGenAI({
+    apiKey:process.env.GEMINI_API_KEY
+});
 
-        const prompt = `
-You are Aether, an AI research assistant.
+const groq = new Groq({
+    apiKey:process.env.GROQ_API_KEY
+});
 
-Summarize the following research paper for a university computer science student.
+const OLLAMA_URL = "http://localhost:11434/api/generate";
+const OLLAMA_MODEL = "qwen2.5:3b";
 
-Include:
-1. Overview: A concise 2–3 sentence explanation of what the paper is about.
-2. Key Contribution: What the researchers propose or introduce.
-3. Key Findings: The main results/findings only if stated in the provided abstract.
-4. Why It Matters: The significance based strictly on the supplied information.
-
-Keep the summary under 150 words.
-Use simple English.
-Use only information contained in the title and abstract. 
-Do not invent results, limitations, methods, or claims that are not explicitly supported. 
-If information is unavailable, omit that section.
-
-Title:
-${title}
-
-Abstract:
-${abstract}
-`;
-
-        const response = await axios.post(
-            "http://localhost:11434/api/generate",
-            {
-                model:"qwen2.5:3b",
-                prompt,
-                stream:false
-            }
-        );
-
-        return response.data.response.trim();
-
-    }
-    catch(err){
-        console.log(err);
-        return "Unable to generate Aether Summary.";
-    }
-
+// Local Qwen fallback
+async function generateWithQwen(prompt){
+    const response = await axios.post(OLLAMA_URL,{
+        model:OLLAMA_MODEL,
+        prompt,
+        stream:false
+    });
+    return response.data.response;
 }
 
-async function getKeywords(title,abstract){
-    try{
-        const prompt = `
+// Generate paper summary using Gemini
+async function getSummary(title,abstract){
+    const prompt = `
 You are Aether, an AI research assistant.
 
-Analyze the title and abstract of the research paper below.
-Generate 5 to 7 concise academic keywords that best represent the paper's main topics, methods, technologies, and research domain.
+Generate a clear, academically accurate summary of the following research paper.
 
-Rules:
-- Use only information supported by the title and abstract.
-- Do not invent concepts that are not supported by the provided information.
-- Prefer specific technical terms over broad generic terms.
-- Do not include explanations.
-- Return only comma-separated keywords.
+The summary should:
+- Explain the main research problem.
+- Describe the proposed approach or methodology.
+- Highlight the most important findings.
+- Explain the significance of the research.
+- Be concise but informative.
+- Use clear language suitable for a university student.
+- Do not invent information not present in the provided abstract.
+- Return only the summary without greetings, headings, introductions, or markdown formatting.
 
 Title:
 ${title}
@@ -68,24 +48,88 @@ Abstract:
 ${abstract}
 `;
 
-        const response = await axios.post(
-            "http://localhost:11434/api/generate",
-            {
-                model:"qwen2.5:3b",
-                prompt,
-                stream:false
-            }
-        );
+    try{
+        console.time("Gemini Summary Time");
 
-        const keywords = response.data.response
+        const response = await gemini.models.generateContent({
+            model:"gemini-3.5-flash",
+            contents:prompt
+        });
+
+        console.timeEnd("Gemini Summary Time");
+        return response.text.trim();
+    }catch(err){
+        console.log("Gemini summary failed:",err.message);
+        console.log("Falling back to local Qwen...");
+        try{
+            return await generateWithQwen(prompt);
+        }catch(fallbackErr){
+            console.log("Qwen summary fallback failed:",fallbackErr.message);
+            return "Unable to generate Aether Summary.";
+        }
+    }
+}
+
+// Generate paper keywords using Groq
+async function getKeywords(title,abstract){
+    const prompt = `
+You are Aether, an AI research assistant.
+
+Analyze the following research paper and generate exactly 5 relevant academic keywords.
+
+Rules:
+- Return only the keywords.
+- Separate each keyword using a comma.
+- Do not number the keywords.
+- Do not include explanations.
+- Do not include headings.
+- Do not invent concepts unrelated to the provided abstract.
+
+Title:
+${title}
+
+Abstract:
+${abstract}
+`;
+
+    try{
+        console.time("Groq Keywords Time");
+
+        const completion = await groq.chat.completions.create({
+            model:"llama-3.3-70b-versatile",
+            messages:[
+                {
+                    role:"user",
+                    content:prompt
+                }
+            ]
+        });
+
+        console.timeEnd("Groq Keywords Time");
+
+        const result = completion.choices[0].message.content;
+
+        return result
             .split(",")
             .map(keyword=>keyword.trim())
-            .filter(keyword=>keyword.length>0);
-
-        return keywords;
+            .filter(keyword=>keyword.length>0)
+            .slice(0,5);
     }catch(err){
-        console.log(err);
-        return [];
+        console.log("Groq keywords failed:",err.message);
+        console.log("Falling back to local Qwen...");
+
+        try{
+            const result = await generateWithQwen(prompt);
+
+            return result
+                .split(",")
+                .map(keyword=>keyword.trim())
+                .filter(keyword=>keyword.length>0)
+                .slice(0,5);
+        }catch(fallbackErr){
+            console.log("Qwen keywords fallback failed:",fallbackErr.message);
+            return ["Keywords unavailable"];
+        }
     }
 }
 

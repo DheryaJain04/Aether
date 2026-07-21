@@ -2,56 +2,108 @@
 // Is called inside search route
 const axios = require("axios");
 
-async function searchPapers(req, res) {
-    try {
+// Reconstruct OpenAlex abstract from inverted index
+function reconstructAbstract(invertedIndex){
+    if(!invertedIndex){
+        return null;
+    }
+
+    const words = [];
+
+    for(const [word,positions] of Object.entries(invertedIndex)){
+        positions.forEach(position=>{
+            words[position] = word;
+        });
+    }
+    return words.join(" ");
+}
+
+// Format OpenAlex publication type
+function formatPublicationType(type){
+    if(!type){
+        return "Research Paper";
+    }
+    return type
+        .split("-")
+        .map(word=>word.charAt(0).toUpperCase()+word.slice(1))
+        .join(" ");
+}
+
+async function searchPapers(req,res){
+    try{
         const query = req.query.q;
 
         const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}`;
 
-        const response = await axios.get(url);        
+        const response = await axios.get(url);
 
-        const papers = response.data.results.map((paper) => {
-            
+        const papers = response.data.results.map((paper)=>{
+
+            // Format authors
             const authorNames = paper.authorships.map(
-                author => author.author.display_name
+                author=>author.author.display_name
             );
 
             const displayedAuthors =
-            authorNames.slice(0,3).join(" • ") +
-            (authorNames.length > 3
-                ? ` +${authorNames.length-3} more`
-                : "");
+                authorNames.slice(0,3).join(" • ") +
+                (
+                    authorNames.length>3
+                        ? ` +${authorNames.length-3} more`
+                        : ""
+                );
+
+            // Reconstruct abstract
+            const abstract = reconstructAbstract(
+                paper.abstract_inverted_index
+            );
 
             return {
-                id: paper.id.split("/").pop(),
-                title: paper.display_name,
+                id:paper.id.split("/").pop(),
+
+                title: paper.display_name ||"Untitled Research Paper",
+
                 authors: displayedAuthors,
-                year: paper.publication_year,
-                journal: 
-                    paper.primary_location?.source?.display_name ||
-                    "Research Paper",
+
+                year: paper.publication_year ||
+                    "Unknown Year",
+
+                journal: paper.primary_location?.source?.display_name ||
+                    "Unknown Source",
+
                 doi:
                     paper.doi
-                        ? paper.doi.replace("https://doi.org/", "")
+                        ? paper.doi.replace(
+                            "https://doi.org/",
+                            ""
+                        )
                         : null,
-                openAccess: paper.open_access?.is_oa,
+
+                openAccess:
+                    paper.open_access?.is_oa || false,
+
                 paperUrl:
                     paper.primary_location?.landing_page_url ||
                     paper.doi ||
                     "#",
-                keywords: ["Unavailable"],
-                abstract: "Coming soon",
-                relevance: Math.floor(Math.random()*16)+85,
+
+                abstract,
+
+                citedBy:
+                    paper.cited_by_count || 0,
+
+                publicationType:
+                    formatPublicationType(paper.type),
+
+                relevance:
+                    Math.floor(Math.random()*16)+85
             };
         });
 
-        //renders search.ejs with query and papers
-        res.render("search", {
+        res.render("search",{
             query,
             papers
         });
-
-    } catch (err) {
+    }catch(err){
         console.log(err);
         res.send("Something went wrong.");
     }

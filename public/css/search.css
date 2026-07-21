@@ -249,3 +249,25 @@ hr{
     color:#64748B;
     font-size:18px;
 }
+
+.abstract{
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.6;
+}
+
+.paper-stats{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.stat-separator{
+    color: #94a3b8;
+}
