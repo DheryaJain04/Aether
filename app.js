@@ -1,7 +1,14 @@
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
+require("dotenv").config();
 const express = require("express");
-const path = require("path")
+const connectDB = require("./config/db");
+const path = require("path");
 const app = express();
 const port = 3000;
+
+connectDB();
 
 const homeRouter = require("./routes/home");
 const searchRouter = require("./routes/search");
