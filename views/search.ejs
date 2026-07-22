@@ -15,104 +15,449 @@
 <div class="results-container">
 
     <header class="top-bar">
-        <a href="/">← Back to Search</a>
+        <a href="/">
+            ← Back to Search
+        </a>
+
         <h2>Aether</h2>
     </header>
 
     <section class="results-header">
-        <h1>Showing results for "<%= query %>"</h1>
-        <p>
-            <%= papers.length %> Research Papers<br>
-            Ranked using <strong>Aether Relevance Metric</strong>
-        </p>
+
+        <div class="results-info">
+            <h1>
+                Showing results for
+                "<%= query %>"
+            </h1>
+
+            <p>
+                <%= papers.length %>
+                Research Papers
+            </p>
+        </div>
+
+        <div class="ranking-panel">
+
+            <div class="ranking-heading">
+
+                <div class="ranking-icon">
+                    ✦
+                </div>
+
+                <div>
+                    <h3>
+                        Smart Aether Ranking
+                    </h3>
+
+                    <p id="ranking-description">
+                        Balanced ranking across relevance,
+                        impact, freshness and venue quality.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="ranking-modes">
+
+                <button
+                    class="ranking-mode active"
+                    data-mode="balanced"
+                >
+                    Balanced
+                </button>
+
+                <button
+                    class="ranking-mode"
+                    data-mode="relevant"
+                >
+                    Most Relevant
+                </button>
+
+                <button
+                    class="ranking-mode"
+                    data-mode="latest"
+                >
+                    Latest Research
+                </button>
+
+                <button
+                    class="ranking-mode"
+                    data-mode="influential"
+                >
+                    Most Influential
+                </button>
+
+            </div>
+
+        </div>
+
     </section>
 
     <hr>
 
     <% if(papers.length===0){ %>
+
         <div class="empty-state">
-            <h2>No research papers found.</h2>
-            <p>Try searching with broader keywords.</p>
-        </div>
-    <% } %>
-
-    <% papers.forEach(paper=>{ %>
-
-    <div class="paper-wrapper">
-
-        <div class="score-badge">
-            <span>Aether Score</span>
-            <strong><%= paper.relevance %>%</strong>
-        </div>
-
-        <article class="paper-card">
-
-            <h2 class="paper-title">
-                <a href="<%= paper.paperUrl %>" target="_blank">
-                    <%= paper.title %>
-                </a>
+            <h2>
+                No research papers found.
             </h2>
 
-            <% if(paper.authors){ %>
-            <p class="authors">
-                <%= paper.authors %>
+            <p>
+                Try searching with broader keywords.
             </p>
-            <% } %>
+        </div>
 
-            <div class="meta">
-                <span class="journal">
-                    <%= paper.journal %> • <%= paper.year %>
-                </span>
-                <% if(paper.openAccess){ %>
-                <span class="oa-badge">
-                    🟢 Open Access
-                </span>
-                <% } %>
-            </div>
+    <% } %>
 
-            <% if(paper.doi){ %>
-            <a
-                href="https://doi.org/<%= paper.doi %>"
-                target="_blank"
-                class="doi">
-                DOI • <%= paper.doi %>
-            </a>
-            <% } %>
+    <div id="papers-container">
 
-            <% if(paper.abstract){ %>
-            <div class="section abstract-section">
-                <h4>Abstract</h4>
-                <p class="abstract">
-                    <%= paper.abstract %>
-                </p>
-            </div>
-            <% } %>
+        <% papers.forEach((paper,index)=>{ %>
 
-            <div class="paper-stats">
-                <span>
-                    <%= paper.publicationType %>
-                </span>
-                <span class="stat-separator">•</span>
-                <span>
-                    Cited by <%= paper.citedBy.toLocaleString() %>
-                </span>
-            </div>
+        <div
+            class="paper-wrapper"
+            data-paper-id="<%= paper.id %>"
+            data-balanced="<%= paper.scores.balanced %>"
+            data-relevant="<%= paper.scores.relevant %>"
+            data-latest="<%= paper.scores.latest %>"
+            data-influential="<%= paper.scores.influential %>"
+        >
 
-            <div class="actions">
-                <a
-                    href="/paper/<%= paper.id %>?q=<%= encodeURIComponent(query) %>"
-                    class="read-btn">
-                    View Paper ↗
-                </a>
-                <button class="save-btn">
-                    ⭐ Save
-                </button>
-            </div>
-        </article>
+            <article class="paper-card">
 
+                <div class="paper-content">
+
+                    <h2 class="paper-title">
+                        <a
+                            href="<%= paper.paperUrl %>"
+                            target="_blank"
+                        >
+                            <%= paper.title %>
+                        </a>
+                    </h2>
+
+                    <% if(paper.authors){ %>
+
+                    <p class="authors">
+                        <%= paper.authors %>
+                    </p>
+
+                    <% } %>
+
+                    <div class="meta">
+
+                        <span class="journal">
+                            <%= paper.journal %>
+                            •
+                            <%= paper.year %>
+                        </span>
+
+                        <% if(paper.openAccess){ %>
+
+                        <span class="oa-badge">
+                            ● Open Access
+                        </span>
+
+                        <% } %>
+
+                    </div>
+
+                    <% if(paper.doi){ %>
+
+                    <a
+                        href="https://doi.org/<%= paper.doi %>"
+                        target="_blank"
+                        class="doi"
+                    >
+                        DOI • <%= paper.doi %>
+                    </a>
+
+                    <% } %>
+
+                    <div class="section">
+
+                        <h4>
+                            Abstract
+                        </h4>
+
+                        <p class="abstract">
+                            <%= paper.abstract %>
+                        </p>
+
+                    </div>
+
+                    <div class="paper-metrics">
+
+                        <span>
+                            <%= paper.publicationType %>
+                        </span>
+
+                        <span class="metric-divider">
+                            •
+                        </span>
+
+                        <span>
+                            Cited by
+                            <%= paper.citedBy %>
+                        </span>
+
+                    </div>
+
+                    <div class="actions">
+
+                        <a
+                            href="/paper/<%= paper.id %>?q=<%= encodeURIComponent(query) %>"
+                            class="read-btn"
+                        >
+                            View Paper ↗
+                        </a>
+
+                        <button class="save-btn">
+                            ⭐ Save
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="aether-score">
+
+                    <div class="score-ring">
+
+                        <div class="score-inner">
+
+                            <span class="score-label">
+                                Aether
+                            </span>
+
+                            <strong class="score-value">
+                                <%= paper.scores.balanced %>
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <div class="score-tooltip">
+
+                        <div class="tooltip-title">
+                            Aether Score Breakdown
+                        </div>
+
+                        <div class="score-row">
+                            <span>Relevance</span>
+                            <div class="score-bar">
+                                <div
+                                    class="score-bar-fill"
+                                    data-score="<%= paper.scoreBreakdown.relevance %>"
+                                ></div>
+                            </div>
+                            <strong>
+                                <%= paper.scoreBreakdown.relevance %>
+                            </strong>
+                        </div>
+
+                        <div class="score-row">
+                            <span>Impact</span>
+                            <div class="score-bar">
+                                <div
+                                    class="score-bar-fill"
+                                    data-score="<%= paper.scoreBreakdown.impact %>"
+                                ></div>
+                            </div>
+                            <strong>
+                                <%= paper.scoreBreakdown.impact %>
+                            </strong>
+                        </div>
+
+                        <div class="score-row">
+                            <span>Freshness</span>
+                            <div class="score-bar">
+                                <div
+                                    class="score-bar-fill"
+                                    data-score="<%= paper.scoreBreakdown.freshness %>"
+                                ></div>
+                            </div>
+                            <strong>
+                                <%= paper.scoreBreakdown.freshness %>
+                            </strong>
+                        </div>
+
+                        <div class="score-row">
+                            <span>Venue</span>
+                            <div class="score-bar">
+                                <div
+                                    class="score-bar-fill"
+                                    data-score="<%= paper.scoreBreakdown.venue %>"
+                                ></div>
+                            </div>
+                            <strong>
+                                <%= paper.scoreBreakdown.venue %>
+                            </strong>
+                        </div>
+
+                        <div class="tooltip-mode">
+                            Ranking mode:
+                            <strong class="tooltip-mode-value">
+                                Balanced
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+        <% }) %>
     </div>
-    <% }) %>
 </div>
+
+<script>
+
+document.querySelectorAll(".score-bar-fill").forEach(bar=>{
+    bar.style.width = `${bar.dataset.score}%`;
+});
+
+const papersContainer =
+    document.getElementById(
+        "papers-container"
+    );
+
+const rankingButtons =
+    document.querySelectorAll(
+        ".ranking-mode"
+    );
+
+const rankingDescription =
+    document.getElementById(
+        "ranking-description"
+    );
+
+const modeDescriptions = {
+
+    balanced:
+        "Balanced ranking across relevance, impact, freshness and venue quality.",
+
+    relevant:
+        "Prioritizing semantic and lexical relevance to your research query.",
+
+    latest:
+        "Prioritizing recent research while maintaining strong query relevance.",
+
+    influential:
+        "Prioritizing academic impact, citation strength and established research."
+
+};
+
+const modeNames = {
+
+    balanced:
+        "Balanced",
+
+    relevant:
+        "Most Relevant",
+
+    latest:
+        "Latest Research",
+
+    influential:
+        "Most Influential"
+
+};
+
+function changeRankingMode(mode){
+
+    rankingButtons.forEach(
+        button=>{
+
+            button.classList.toggle(
+                "active",
+                button.dataset.mode===mode
+            );
+
+        }
+    );
+
+    rankingDescription.innerText =
+        modeDescriptions[mode];
+
+    const paperCards =
+        Array.from(
+            papersContainer.children
+        );
+
+    paperCards.forEach(
+        card=>{
+
+            const newScore =
+                Number(
+                    card.dataset[mode]
+                );
+
+            const scoreValue =
+                card.querySelector(
+                    ".score-value"
+                );
+
+            scoreValue.innerText =
+                newScore;
+
+            const tooltipMode =
+                card.querySelector(
+                    ".tooltip-mode-value"
+                );
+
+            tooltipMode.innerText =
+                modeNames[mode];
+
+        }
+    );
+
+    paperCards.sort(
+        (a,b)=>{
+
+            const scoreA =
+                Number(
+                    a.dataset[mode]
+                );
+
+            const scoreB =
+                Number(
+                    b.dataset[mode]
+                );
+
+            return scoreB-scoreA;
+
+        }
+    );
+
+    paperCards.forEach(
+        card=>{
+
+            papersContainer.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+rankingButtons.forEach(
+    button=>{
+
+        button.addEventListener(
+            "click",
+            ()=>{
+
+                changeRankingMode(
+                    button.dataset.mode
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 </body>
 </html>

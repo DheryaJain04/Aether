@@ -1,6 +1,9 @@
-// Controller that calls axios and gets data from axios 
+// Controller that calls axios and gets data from OpenAlex
 // Is called inside search route
+
 const axios = require("axios");
+const relevanceService = require("../services/relevanceService");
+const aetherScoreService = require("../services/aetherScoreService");
 
 // Reconstruct OpenAlex abstract from inverted index
 function reconstructAbstract(invertedIndex){
@@ -31,81 +34,150 @@ function formatPublicationType(type){
 
 async function searchPapers(req,res){
     try{
-        const query = req.query.q;
+        const query =
+            req.query.q;
 
-        const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}`;
+        const url =
+            `https://api.openalex.org/works?search=${encodeURIComponent(query)}&per-page=50`;
 
-        const response = await axios.get(url);
+        const response =
+            await axios.get(url);
 
-        const papers = response.data.results.map((paper)=>{
+        let rawPapers =
+            response.data.results;
 
-            // Format authors
-            const authorNames = paper.authorships.map(
-                author=>author.author.display_name
-            );
-
-            const displayedAuthors =
-                authorNames.slice(0,3).join(" • ") +
-                (
-                    authorNames.length>3
-                        ? ` +${authorNames.length-3} more`
-                        : ""
+        // Expensive operation:
+        // Ollama embeddings + lexical relevance
+        // Runs ONCE when the search loads
+        rawPapers =
+            await relevanceService
+                .addRelevanceScores(
+                    query,
+                    rawPapers
                 );
 
-            // Reconstruct abstract
-            const abstract = reconstructAbstract(
-                paper.abstract_inverted_index
+        // Calculate R/I/F/V once
+        // and generate all 4 ranking mode scores
+        rawPapers =
+            aetherScoreService
+                .rankPapers(
+                    rawPapers
+                );
+
+        const papers =
+            rawPapers.map(
+                paper=>{
+
+                    const authorNames =
+                        (
+                            paper.authorships ||
+                            []
+                        ).map(
+                            author=>
+                                author.author
+                                    .display_name
+                        );
+
+                    const displayedAuthors =
+                        authorNames
+                            .slice(0,3)
+                            .join(" • ")+
+                        (
+                            authorNames.length>3
+                                ? ` +${authorNames.length-3} more`
+                                : ""
+                        );
+
+                    const abstract =
+                        reconstructAbstract(
+                            paper.abstract_inverted_index
+                        );
+
+                    return {
+                        id:
+                            paper.id
+                                .split("/")
+                                .pop(),
+
+                        title:
+                            paper.display_name ||
+                            "Untitled Research Paper",
+
+                        authors:
+                            displayedAuthors ||
+                            "Unknown Authors",
+
+                        year:
+                            paper.publication_year ||
+                            "Unknown Year",
+
+                        journal:
+                            paper
+                                .primary_location
+                                ?.source
+                                ?.display_name ||
+                            "Unknown Source",
+
+                        doi:
+                            paper.doi
+                                ? paper.doi.replace(
+                                    "https://doi.org/",
+                                    ""
+                                )
+                                : null,
+
+                        openAccess:
+                            paper
+                                .open_access
+                                ?.is_oa ||
+                            false,
+
+                        paperUrl:
+                            paper
+                                .primary_location
+                                ?.landing_page_url ||
+                            paper.doi ||
+                            "#",
+
+                        abstract:
+                            abstract ||
+                            "Abstract unavailable.",
+
+                        citedBy:
+                            paper.cited_by_count ||
+                            0,
+
+                        publicationType:
+                            formatPublicationType(
+                                paper.type
+                            ),
+
+                        scores:
+                            paper.scores,
+
+                        scoreBreakdown:
+                            paper.scoreBreakdown
+                    };
+                }
             );
 
-            return {
-                id:paper.id.split("/").pop(),
+        res.render(
+            "search",
+            {
+                query,
+                papers
+            }
+        );
 
-                title: paper.display_name ||"Untitled Research Paper",
-
-                authors: displayedAuthors,
-
-                year: paper.publication_year ||
-                    "Unknown Year",
-
-                journal: paper.primary_location?.source?.display_name ||
-                    "Unknown Source",
-
-                doi:
-                    paper.doi
-                        ? paper.doi.replace(
-                            "https://doi.org/",
-                            ""
-                        )
-                        : null,
-
-                openAccess:
-                    paper.open_access?.is_oa || false,
-
-                paperUrl:
-                    paper.primary_location?.landing_page_url ||
-                    paper.doi ||
-                    "#",
-
-                abstract,
-
-                citedBy:
-                    paper.cited_by_count || 0,
-
-                publicationType:
-                    formatPublicationType(paper.type),
-
-                relevance:
-                    Math.floor(Math.random()*16)+85
-            };
-        });
-
-        res.render("search",{
-            query,
-            papers
-        });
     }catch(err){
-        console.log(err);
-        res.send("Something went wrong.");
+        console.error(
+            "Search error:",
+            err
+        );
+
+        res.send(
+            "Something went wrong."
+        );
     }
 }
 
