@@ -16,16 +16,19 @@ const OLLAMA_MODEL = "qwen2.5:3b";
 
 // Local Qwen fallback
 async function generateWithQwen(prompt){
-    const response = await axios.post(OLLAMA_URL,{
-        model:OLLAMA_MODEL,
-        prompt,
-        stream:false
-    });
-    return response.data.response;
+    const response = await axios.post(
+        "http://localhost:11434/api/generate",
+        {
+            model: "qwen2.5:3b",
+            prompt: prompt,
+            stream: false
+        }
+    );
+    return response.data.response.trim();
 }
 
 // Generate paper summary using Gemini
-async function getSummary(title,abstract){
+async function getSummary(title, abstract){
     const prompt = `
 You are Aether, an AI research assistant.
 
@@ -48,25 +51,61 @@ Abstract:
 ${abstract}
 `;
 
+    // Primary: Gemini
     try{
         console.time("Gemini Summary Time");
 
         const response = await gemini.models.generateContent({
-            model:"gemini-3.5-flash",
-            contents:prompt
+            model: "gemini-3.5-flash",
+            contents: prompt
         });
 
         console.timeEnd("Gemini Summary Time");
+
         return response.text.trim();
+
     }catch(err){
-        console.log("Gemini summary failed:",err.message);
+        console.log("Gemini summary failed:", err.message);
+        console.log("Falling back to Groq...");
+    }
+
+    // Fallback 1: Groq
+    try{
+        console.time("Groq Summary Time");
+
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            model: "openai/gpt-oss-120b"
+        });
+
+        console.timeEnd("Groq Summary Time");
+
+        return completion.choices[0].message.content.trim();
+
+    }catch(err){
+        console.log("Groq summary failed:", err.message);
         console.log("Falling back to local Qwen...");
-        try{
-            return await generateWithQwen(prompt);
-        }catch(fallbackErr){
-            console.log("Qwen summary fallback failed:",fallbackErr.message);
-            return "Unable to generate Aether Summary.";
-        }
+    }
+
+    // Fallback 2: Local Qwen
+    try{
+        console.time("Qwen Summary Time");
+
+        const response = await generateWithQwen(prompt);
+
+        console.timeEnd("Qwen Summary Time");
+
+        return response;
+
+    }catch(err){
+        console.log("Qwen summary failed:", err.message);
+
+        return "Unable to generate Aether Summary.";
     }
 }
 
@@ -96,7 +135,7 @@ ${abstract}
         console.time("Groq Keywords Time");
 
         const completion = await groq.chat.completions.create({
-            model:"llama-3.3-70b-versatile",
+            model: "openai/gpt-oss-120b",
             messages:[
                 {
                     role:"user",

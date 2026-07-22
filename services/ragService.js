@@ -126,6 +126,8 @@ Rules:
 - If the answer cannot be found in the context, say that the provided context does not contain enough information to answer.
 - Give a clear, concise, academically accurate answer.
 - Do not mention context numbers unless necessary.
+- Do not use Markdown formatting.
+- Do not use asterisks for bold text.
 
 CONTEXT:
 ${context}
@@ -135,7 +137,7 @@ ${question}
 `;
 
     const completion = await groq.chat.completions.create({
-        model:"llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages:[
             {
                 role:"user",
@@ -147,8 +149,64 @@ ${question}
     return completion.choices[0].message.content.trim();
 }
 
+async function generateAbstractAnswer(
+    question,
+    title,
+    abstract
+){
+    const prompt = `
+You are Aether, an AI research assistant.
+
+The full text of this research paper is not currently accessible.
+You have access only to the paper's title and abstract.
+
+Answer the user's question using ONLY the information contained in the title and abstract below.
+
+Rules:
+- Do not use outside knowledge.
+- Do not invent information.
+- Do not claim to have access to the full paper.
+- If the abstract clearly contains the answer, answer normally.
+- If the abstract contains only partial information, clearly state that the answer is based on limited information from the abstract.
+- If the abstract does not contain the requested information, clearly say that the available abstract does not provide enough information to answer the question.
+- Keep the answer clear, concise, and academically accurate.
+- Do not use Markdown formatting.
+- Do not use asterisks for bold text.
+
+TITLE:
+${title}
+
+ABSTRACT:
+${abstract}
+
+QUESTION:
+${question}
+`;
+
+    const completion =
+        await groq.chat.completions.create({
+            model:"openai/gpt-oss-120b",
+            messages:[
+                {
+                    role:"user",
+                    content:prompt
+                }
+            ]
+        });
+
+    return completion
+        .choices[0]
+        .message
+        .content
+        .trim();
+}
+
 module.exports = {
+    getPaperText,
+    splitPaperText,
+    createVectorStore,
     getPaperVectorStore,
     retrieveRelevantChunks,
-    generateRAGAnswer
+    generateRAGAnswer,
+    generateAbstractAnswer
 };

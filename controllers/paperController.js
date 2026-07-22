@@ -148,62 +148,140 @@ async function chatWithPaper(req,res){
             });
         }
 
+        console.log("CHAT REQUEST:",id);
+        console.log("QUESTION:",question);
+
+        // Fetch paper from OpenAlex
         const url = `https://api.openalex.org/works/${id}`;
         const response = await axios.get(url);
         const paper = response.data;
 
-        let pdfUrl =
-            paper.best_oa_location?.pdf_url ||
-            paper.primary_location?.pdf_url ||
-            null;
+        // Collect every possible PDF URL
+        const pdfUrls = [];
 
-        if(!pdfUrl && Array.isArray(paper.locations)){
-            const pdfLocation = paper.locations.find(
-                location=>location.pdf_url
+        if(paper.best_oa_location?.pdf_url){
+            pdfUrls.push(
+                paper.best_oa_location.pdf_url
             );
-
-            if(pdfLocation){
-                pdfUrl = pdfLocation.pdf_url;
-            }
         }
 
-        if(!pdfUrl){
-            return res.status(400).json({
-                error:"Aether cannot access the full text of this paper, so the paper chatbot is unavailable."
+        if(paper.primary_location?.pdf_url){
+            pdfUrls.push(
+                paper.primary_location.pdf_url
+            );
+        }
+
+        if(Array.isArray(paper.locations)){
+            paper.locations.forEach(location=>{
+                if(location.pdf_url){
+                    pdfUrls.push(location.pdf_url);
+                }
             });
         }
 
-        const paperData = {
-            id:paper.id.split("/").pop(),
-            title:paper.display_name,
-            pdfUrl
-        };
+        // Remove duplicate URLs
+        const uniquePdfUrls = [
+            ...new Set(pdfUrls)
+        ];
 
-        const vectorStore =
-            await ragService.getPaperVectorStore(
-                paperData
-            );
+        console.log(
+            "PDF locations found:",
+            uniquePdfUrls.length
+        );
 
-        const relevantDocuments =
-            await ragService.retrieveRelevantChunks(
-                vectorStore,
-                question
-            );
+        // Try every available PDF
+        for(const pdfUrl of uniquePdfUrls){
+            try{
+                console.log(
+                    "Trying PDF:",
+                    pdfUrl
+                );
 
-        const answer =
-            await ragService.generateRAGAnswer(
-                question,
-                relevantDocuments
-            );
+                const paperData = {
+                    id:paper.id.split("/").pop(),
+                    title:paper.display_name,
+                    pdfUrl
+                };
 
-        return res.json({
-            answer
+                const vectorStore =
+                    await ragService.getPaperVectorStore(
+                        paperData
+                    );
+
+                console.log(
+                    "PDF successfully processed."
+                );
+
+                const relevantDocuments =
+                    await ragService.retrieveRelevantChunks(
+                        vectorStore,
+                        question
+                    );
+
+                const answer =
+                    await ragService.generateRAGAnswer(
+                        question,
+                        relevantDocuments
+                    );
+
+                return res.json({
+                    answer,
+                    source:"full-paper"
+                });
+
+            }catch(pdfError){
+                console.log(
+                    "PDF failed:",
+                    pdfUrl
+                );
+
+                console.log(
+                    pdfError.message
+                );
+            }
+        }
+
+        // If every PDF failed, use abstract
+        console.log(
+            "No accessible PDF. Trying abstract fallback."
+        );
+
+        const abstract = reconstructAbstract(
+            paper.abstract_inverted_index
+        );
+
+        if(
+            abstract &&
+            abstract.trim().length > 0
+        ){
+            const answer =
+                await ragService.generateAbstractAnswer(
+                    question,
+                    paper.display_name,
+                    abstract
+                );
+
+            return res.json({
+                answer,
+                source:"abstract"
+            });
+        }
+
+        // Nothing usable available
+        return res.status(400).json({
+            error:
+                "Aether could not access enough content from this paper to answer your question."
         });
+
     }catch(err){
-        console.error("Paper chat error:",err.message);
+        console.error(
+            "PAPER CHAT ERROR:",
+            err
+        );
 
         return res.status(500).json({
-            error:"Aether was unable to process this paper. Please try again."
+            error:
+                "Aether was unable to process this paper. Please try again."
         });
     }
 }
