@@ -1,0 +1,6 @@
+.paper-status{ display:grid; min-height:100vh; place-content:center; gap:16px; padding:30px; text-align:center; }
+.paper-status h1{ font-family:"Outfit",sans-serif; font-size:38px; }
+.paper-status p{ color:#64748B; }
+.paper-status a{ color:#2563EB; font-weight:700; }
+.paper-save-button{ padding:10px 15px; border:1px solid #BFDBFE; border-radius:999px; background:#EFF6FF; color:#1D4ED8; cursor:pointer; font-size:13px; font-weight:700; }
+.paper-save-button:hover{ border-color:#60A5FA; background:#DBEAFE; }

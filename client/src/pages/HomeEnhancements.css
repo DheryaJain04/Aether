@@ -1,0 +1,35 @@
+.home-hero{
+    position:relative;
+    background:
+        radial-gradient(circle at 16% 16%, rgba(37,99,235,.11), transparent 26%),
+        radial-gradient(circle at 85% 82%, rgba(20,184,166,.10), transparent 30%);
+}
+
+.home-nav{
+    position:absolute;
+    top:28px;
+    left:clamp(20px, 5vw, 72px);
+    right:clamp(20px, 5vw, 72px);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.home-logo{
+    font-family:"Outfit",sans-serif;
+    color:#1D4ED8;
+    font-size:25px;
+    font-weight:700;
+}
+
+.home-nav a{
+    color:#2563EB;
+    font-weight:600;
+}
+
+@media(max-width:620px){
+    .hero h1{ font-size:54px; }
+    .hero h2{ font-size:24px; }
+    .search-box{ flex-direction:column; }
+    .search-box button{ width:100%; }
+}

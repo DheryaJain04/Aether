@@ -407,7 +407,8 @@ async function sendQuestion(question){
     catch(err){
 
         loadingRow.querySelector(".aether-message").innerText =
-        err.message || "Aether was unable to process this paper. Please try again.";
+            "Aether was unable to process this paper. Please try again.";
+
     }
 
     chatMessages.scrollTop = chatMessages.scrollHeight;

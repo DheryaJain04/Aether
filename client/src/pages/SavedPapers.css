@@ -1,0 +1,14 @@
+.saved-page{ max-width:900px; min-height:100vh; margin:0 auto; padding:40px 24px 80px; }
+.saved-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:58px; }
+.saved-header a{ color:#2563EB; font-weight:600; text-decoration:none; }
+.saved-header .saved-logo{ font-family:"Outfit",sans-serif; font-size:36px; font-weight:700; }
+.saved-intro{ max-width:650px; margin-bottom:26px; }
+.saved-intro .eyebrow{ margin:0 0 8px; color:#2563EB; font-size:13px; font-weight:700; letter-spacing:.9px; }
+.saved-intro h1{ margin:0 0 12px; font-family:"Outfit",sans-serif; font-size:48px; letter-spacing:-1.5px; }
+.saved-intro > p:last-child{ margin:0; color:#64748B; font-size:18px; line-height:1.7; }
+.saved-page hr{ margin:0 0 34px; border:0; border-top:1px solid #E2E8F0; }
+.saved-empty{ padding:110px 20px; text-align:center; }
+.saved-empty h2{ margin:0 0 10px; font-family:"Outfit",sans-serif; font-size:32px; }
+.saved-empty p{ margin:0 0 24px; color:#64748B; font-size:18px; }
+.saved-empty a{ display:inline-block; padding:12px 20px; border-radius:10px; background:#2563EB; color:#fff; font-weight:700; text-decoration:none; }
+@media(max-width:640px){ .saved-intro h1{ font-size:38px; } .saved-header .saved-logo{ font-size:29px; } }

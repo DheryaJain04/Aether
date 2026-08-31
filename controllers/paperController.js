@@ -5,7 +5,7 @@ const aiService = require("../services/aiService");
 const citationService = require("../services/citationService");
 const ragService = require("../services/ragService");
 
-//helper fn to reconstruct abstract from OpenAlex
+// Helper fn to reconstruct abstract from OpenAlex
 function reconstructAbstract(invertedIndex){
     if(!invertedIndex){
         return "Abstract unavailable.";
@@ -22,7 +22,39 @@ function reconstructAbstract(invertedIndex){
     return words.join(" ");
 }
 
-//loads paper page
+// Normalizes OpenAlex data for the React client without changing EJS rendering.
+async function getPaperData(req, res){
+    try{
+        const response = await axios.get(
+            `https://api.openalex.org/works/${encodeURIComponent(req.params.id)}`
+        );
+        const paper = response.data;
+        const authorNames = (paper.authorships || [])
+            .map(author => author.author?.display_name)
+            .filter(Boolean);
+        const authors = authorNames.slice(0, 3).join(" • ") +
+            (authorNames.length > 3 ? ` +${authorNames.length - 3} more` : "");
+
+        res.json({
+            paper: {
+                id: paper.id.split("/").pop(),
+                title: paper.display_name || "Untitled Research Paper",
+                authors: authors || "Unknown Authors",
+                journal: paper.primary_location?.source?.display_name || "Research Paper",
+                year: paper.publication_year || "Unknown Year",
+                doi: paper.doi ? paper.doi.replace("https://doi.org/", "") : null,
+                openAccess: paper.open_access?.is_oa || false,
+                abstract: reconstructAbstract(paper.abstract_inverted_index),
+                citations: citationService.generateCitations(paper)
+            }
+        });
+    }catch(err){
+        console.error("Paper API error:", err.message);
+        res.status(500).json({ error: "Unable to load this paper." });
+    }
+}
+
+// Loads paper page
 async function showPaper(req,res){
     try{
         const id = req.params.id;
@@ -79,7 +111,7 @@ async function showPaper(req,res){
     }
 }
 
-//generates aether summary
+// Generates aether summary
 async function generateSummary(req,res){
     try{
         const id = req.params.id;
@@ -108,7 +140,7 @@ async function generateSummary(req,res){
     }
 }
 
-//generates keywords
+// Generates keywords
 async function generateKeywords(req,res){
     try{
         const id = req.params.id;
@@ -136,7 +168,7 @@ async function generateKeywords(req,res){
     }
 }
 
-//RAG Chatbot
+// RAG Chatbot
 async function chatWithPaper(req,res){
     try{
         const id = req.params.id;
@@ -148,8 +180,8 @@ async function chatWithPaper(req,res){
             });
         }
 
-        console.log("CHAT REQUEST:",id);
-        console.log("QUESTION:",question);
+        console.log("CHAT REQUEST:", id);
+        console.log("QUESTION:", question);
 
         // Fetch paper from OpenAlex
         const url = `https://api.openalex.org/works/${id}`;
@@ -160,15 +192,11 @@ async function chatWithPaper(req,res){
         const pdfUrls = [];
 
         if(paper.best_oa_location?.pdf_url){
-            pdfUrls.push(
-                paper.best_oa_location.pdf_url
-            );
+            pdfUrls.push(paper.best_oa_location.pdf_url);
         }
 
         if(paper.primary_location?.pdf_url){
-            pdfUrls.push(
-                paper.primary_location.pdf_url
-            );
+            pdfUrls.push(paper.primary_location.pdf_url);
         }
 
         if(Array.isArray(paper.locations)){
@@ -180,37 +208,24 @@ async function chatWithPaper(req,res){
         }
 
         // Remove duplicate URLs
-        const uniquePdfUrls = [
-            ...new Set(pdfUrls)
-        ];
-
-        console.log(
-            "PDF locations found:",
-            uniquePdfUrls.length
-        );
+        const uniquePdfUrls = [...new Set(pdfUrls)];
+        console.log("PDF locations found:", uniquePdfUrls.length);
 
         // Try every available PDF
         for(const pdfUrl of uniquePdfUrls){
             try{
-                console.log(
-                    "Trying PDF:",
-                    pdfUrl
-                );
+                console.log("Trying PDF:", pdfUrl);
 
                 const paperData = {
-                    id:paper.id.split("/").pop(),
-                    title:paper.display_name,
+                    id: paper.id.split("/").pop(),
+                    title: paper.display_name,
                     pdfUrl
                 };
 
                 const vectorStore =
-                    await ragService.getPaperVectorStore(
-                        paperData
-                    );
+                    await ragService.getPaperVectorStore(paperData);
 
-                console.log(
-                    "PDF successfully processed."
-                );
+                console.log("PDF successfully processed.");
 
                 const relevantDocuments =
                     await ragService.retrieveRelevantChunks(
@@ -226,34 +241,20 @@ async function chatWithPaper(req,res){
 
                 return res.json({
                     answer,
-                    source:"full-paper"
+                    source: "full-paper"
                 });
 
             }catch(pdfError){
-                console.log(
-                    "PDF failed:",
-                    pdfUrl
-                );
-
-                console.log(
-                    pdfError.message
-                );
+                console.log("PDF failed:", pdfUrl, pdfError.message);
             }
         }
 
-        // If every PDF failed, use abstract
-        console.log(
-            "No accessible PDF. Trying abstract fallback."
-        );
+        // If every PDF failed, use abstract fallback
+        console.log("No accessible PDF. Trying abstract fallback.");
 
-        const abstract = reconstructAbstract(
-            paper.abstract_inverted_index
-        );
+        const abstract = reconstructAbstract(paper.abstract_inverted_index);
 
-        if(
-            abstract &&
-            abstract.trim().length > 0
-        ){
+        if(abstract && abstract.trim().length > 0 && abstract !== "Abstract unavailable."){
             const answer =
                 await ragService.generateAbstractAnswer(
                     question,
@@ -263,31 +264,25 @@ async function chatWithPaper(req,res){
 
             return res.json({
                 answer,
-                source:"abstract"
+                source: "abstract"
             });
         }
 
-        // Nothing usable available
         return res.status(400).json({
-            error:
-                "Aether could not access enough content from this paper to answer your question."
+            error: "Aether cannot access sufficient content for this paper to answer questions."
         });
-
     }catch(err){
-        console.error(
-            "PAPER CHAT ERROR:",
-            err
-        );
+        console.error("Paper chat error:", err.message);
 
         return res.status(500).json({
-            error:
-                "Aether was unable to process this paper. Please try again."
+            error: "Aether was unable to process this paper. Please try again."
         });
     }
 }
 
 module.exports = {
     showPaper,
+    getPaperData,
     generateSummary,
     generateKeywords,
     chatWithPaper

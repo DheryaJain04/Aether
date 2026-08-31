@@ -5,28 +5,33 @@ require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
 const path = require("path");
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 connectDB();
 
-const homeRouter = require("./routes/home");
-const searchRouter = require("./routes/search");
+const apiSearchRouter = require("./routes/apiSearch");
+const apiPapersRouter = require("./routes/apiPapers");
 const paperRouter = require("./routes/paper");
-const savedRouter = require("./routes/saved");
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+const reactBuildPath = path.join(__dirname, "client", "dist");
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname,"public")));
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(reactBuildPath));
 
-app.use("/", homeRouter);
-app.use("/search", searchRouter);
+// API & AI endpoints consumed by the React client
+app.use("/api/search", apiSearchRouter);
+app.use("/api/papers", apiPapersRouter);
 app.use("/paper", paperRouter);
-app.use("/saved", savedRouter);
+
+// React SPA Client-Side Routing: Send index.html for all frontend routes
+app.get("{*path}", (req, res) => {
+    res.sendFile(path.join(reactBuildPath, "index.html"));
+});
 
 app.listen(port, () => {
     console.log(`App is running on port ${port}`);
-})
+});
