@@ -179,7 +179,35 @@ function PaperDetail() {
                 <section className="paper-content">
                     <section className="content-section abstract-section"><div className="content-heading"><span className="section-number">01</span><h2>Abstract</h2></div><p className="abstract-text">{paper.abstract}</p></section>
                     <section className="content-section keywords-section"><div className="content-heading"><span className="section-number">02</span><h2>Keywords</h2></div><div className="keyword-list">{keywords.map(keyword => <span className="keyword" key={keyword}>{keyword}</span>)}</div></section>
-                    <section className="content-section citations-section"><div className="content-heading"><span className="section-number">03</span><h2>Citations</h2></div><p className="section-description">Ready-to-use citations for this research paper.</p><div className="citations-grid">{["apa", "ieee"].map(type => <div className="citation-card" key={type}><div className="citation-top"><span className="citation-type">{type.toUpperCase()}</span><button type="button" className="copy-btn" onClick={() => copyCitation(type)}>{copiedCitation === type ? "Copied" : "Copy"}</button></div><p>{citations[type] || "Citation unavailable."}</p></div>)}</div></section>
+                    <section className="content-section citations-section">
+                        <div className="content-heading">
+                            <span className="section-number">03</span>
+                            <h2>Citations</h2>
+                        </div>
+                        <p className="section-description">Ready-to-use formatted scholarly citations in 4 international academic standards.</p>
+                        <div className="citations-grid">
+                            {[
+                                { id: "apa", label: "APA (7th Edition)" },
+                                { id: "ieee", label: "IEEE" },
+                                { id: "mla", label: "MLA (9th Edition)" },
+                                { id: "chicago", label: "Chicago (17th Edition, Author-Date)" }
+                            ].map(({ id, label }) => (
+                                <div className="citation-card" key={id}>
+                                    <div className="citation-top">
+                                        <span className="citation-type">{label}</span>
+                                        <button
+                                            type="button"
+                                            className="copy-btn"
+                                            onClick={() => copyCitation(id)}
+                                        >
+                                            {copiedCitation === id ? "✓ Copied" : "Copy"}
+                                        </button>
+                                    </div>
+                                    <p className="citation-text">{citations[id] || "Generating citation..."}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
                 </section>
             </main>
         </>

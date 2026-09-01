@@ -58,11 +58,25 @@ function generateMLA(paper){
     return `${authors}. "${title}." ${journal} (${year}).`;
 }
 
+function generateChicago(paper){
+    const authors = extractAuthors(paper);
+    const title = paper.display_name || paper.title || "Untitled Research Paper";
+    const year = paper.publication_year || paper.year || new Date().getFullYear();
+    const journal =
+        paper.primary_location?.source?.display_name ||
+        paper.journal ||
+        "Academic Publication";
+    const doi = paper.doi ? `https://doi.org/${paper.doi.replace("https://doi.org/", "")}` : "";
+
+    return `${authors}. ${year}. "${title}." ${journal}.${doi ? " " + doi : ""}`;
+}
+
 function generateCitations(paper){
     return {
         apa: generateAPA(paper),
         ieee: generateIEEE(paper),
-        mla: generateMLA(paper)
+        mla: generateMLA(paper),
+        chicago: generateChicago(paper)
     };
 }
 
