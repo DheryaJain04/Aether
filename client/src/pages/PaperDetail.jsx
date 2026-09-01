@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { askPaper, getKeywords, getPaper, getSummary } from "../services/api";
 import { isPaperSaved, toggleSavedPaper } from "../services/savedPapers";
+import AetherBrand from "../components/AetherBrand";
+import UserMenu from "../components/UserMenu";
 import "./PaperDetail.css";
 
 const welcomeMessage = "Ask me anything about this research paper. I can help explain concepts, methodology, findings, and more.";
@@ -11,7 +13,7 @@ const suggestedQuestions = [
     "What are the key findings of this paper?"
 ];
 
-function PaperDetail(){
+function PaperDetail() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const [paper, setPaper] = useState(null);
@@ -35,13 +37,13 @@ function PaperDetail(){
 
         getPaper(id)
             .then(data => {
-                if(!active) return;
+                if (!active) return;
                 setPaper(data.paper);
                 setSaved(isPaperSaved(data.paper.id));
                 return Promise.allSettled([getSummary(id), getKeywords(id)]);
             })
             .then(results => {
-                if(!active || !results) return;
+                if (!active || !results) return;
                 const [summaryResult, keywordsResult] = results;
                 setSummary(summaryResult.status === "fulfilled" ? summaryResult.value.summary : "Unable to generate summary.");
                 setKeywords(keywordsResult.status === "fulfilled" && keywordsResult.value.keywords?.length
@@ -54,53 +56,57 @@ function PaperDetail(){
     }, [id]);
 
     useEffect(() => {
-        if(messagesRef.current){
+        if (messagesRef.current) {
             messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
         }
     }, [messages, asking]);
 
-    async function sendQuestion(nextQuestion){
+    async function sendQuestion(nextQuestion) {
         const trimmedQuestion = nextQuestion.trim();
-        if(!trimmedQuestion || asking) return;
+        if (!trimmedQuestion || asking) return;
 
         setQuestion("");
         setMessages(current => [...current, { role: "user", text: trimmedQuestion }]);
         setAsking(true);
-        try{
+        try {
             const data = await askPaper(id, trimmedQuestion);
             setMessages(current => [...current, { role: "assistant", text: data.answer }]);
-        }catch(requestError){
+        } catch (requestError) {
             setMessages(current => [...current, { role: "assistant", text: requestError.message || "Aether was unable to process this paper. Please try again." }]);
-        }finally{
+        } finally {
             setAsking(false);
         }
     }
 
-    async function copyCitation(type){
-        if(!paper?.citations?.[type]) return;
-        try{
+    async function copyCitation(type) {
+        if (!paper?.citations?.[type]) return;
+        try {
             await navigator.clipboard.writeText(paper.citations[type]);
             setCopiedCitation(type);
             window.setTimeout(() => setCopiedCitation(""), 1500);
-        }catch{
+        } catch {
             setCopiedCitation("");
         }
     }
 
-    function toggleSave(){
-        if(!paper) return;
+    function toggleSave() {
+        if (!paper) return;
         setSaved(toggleSavedPaper(paper));
     }
 
-    if(error){
+    if (error) {
         return <main className="paper-status"><Link to="/search">← Back to search</Link><h1>Unable to load paper</h1><p>{error}</p></main>;
     }
 
-    if(!paper){
+    if (!paper) {
         return <main className="paper-status"><p>Loading paper…</p></main>;
     }
 
-    const searchQuery = searchParams.get("q") || "";
+    const searchQueryParam = searchParams.get("q");
+    if (searchQueryParam) {
+        sessionStorage.setItem("aether_last_search_query", searchQueryParam);
+    }
+    const effectiveQuery = searchQueryParam || sessionStorage.getItem("aether_last_search_query") || "";
     const citations = paper.citations || {};
 
     return (
@@ -110,11 +116,17 @@ function PaperDetail(){
             </div>
 
             <header className="top-bar">
-                <Link to="/" className="logo">Aether</Link>
-                <nav className="breadcrumb" aria-label="Breadcrumb">
-                    <Link to="/">Home</Link><span>/</span>
-                    <Link to={`/search?q=${encodeURIComponent(searchQuery)}`}>Search Results</Link><span>/</span><span className="current">Paper</span>
-                </nav>
+                <div className="top-bar-left">
+                    <AetherBrand size="md" variant="horizontal" />
+                    <nav className="breadcrumb" aria-label="Breadcrumb">
+                        <Link to="/">Home</Link><span>/</span>
+                        <Link to={effectiveQuery ? `/search?q=${encodeURIComponent(effectiveQuery)}` : "/search"}>Search Results</Link><span>/</span><span className="current">Paper</span>
+                    </nav>
+                </div>
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "22px" }}>
+                    <Link to="/saved" style={{ color: "#4B5563", fontWeight: 600, fontSize: "14.5px", textDecoration: "none" }}>Saved</Link>
+                    <UserMenu />
+                </div>
             </header>
 
             <main>
@@ -124,7 +136,7 @@ function PaperDetail(){
                         <div className="paper-badges">
                             {paper.openAccess && <span className="open-access"><span className="status-dot"></span>OPEN ACCESS</span>}
                             {paper.year && <span className="year-badge">{paper.year}</span>}
-                            <button type="button" className="paper-save-button" onClick={toggleSave}>{saved ? "★ Saved" : "☆ Save paper"}</button>
+                            <button type="button" className={`paper-save-button ${saved ? "saved" : ""}`} onClick={toggleSave}>{saved ? "★ Saved" : "☆ Save paper"}</button>
                         </div>
                         <h1 className="paper-title">{paper.title}</h1>
                         <p className="paper-authors">{paper.authors}</p>

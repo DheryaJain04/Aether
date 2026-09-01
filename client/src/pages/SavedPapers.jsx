@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import PaperCard from "../components/PaperCard";
 import { getSavedPapers } from "../services/savedPapers";
+import AetherBrand from "../components/AetherBrand";
+import UserMenu from "../components/UserMenu";
 import "./SavedPapers.css";
 
 function SavedPapers(){
@@ -10,8 +12,11 @@ function SavedPapers(){
     return (
         <main className="saved-page">
             <header className="saved-header">
-                <Link to="/">← Back to Search</Link>
-                <Link className="saved-logo" to="/">Aether</Link>
+                <Link to="/" className="back-search-btn">← Back to Search</Link>
+                <AetherBrand size="md" />
+                <div style={{ display: "flex", alignItems: "center", justifySelf: "end" }}>
+                    <UserMenu />
+                </div>
             </header>
             <section className="saved-intro">
                 <p className="eyebrow">YOUR LIBRARY</p>

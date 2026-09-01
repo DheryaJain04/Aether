@@ -1,9 +1,10 @@
-// Controller calls OpenAlex for AI generation
+// Controller calls OpenAlex for AI generation with local database fallback
 
 const axios = require("axios");
 const aiService = require("../services/aiService");
 const citationService = require("../services/citationService");
 const ragService = require("../services/ragService");
+const Paper = require("../models/Paper");
 
 // Helper fn to reconstruct abstract from OpenAlex
 function reconstructAbstract(invertedIndex){
@@ -22,11 +23,17 @@ function reconstructAbstract(invertedIndex){
     return words.join(" ");
 }
 
-// Normalizes OpenAlex data for the React client without changing EJS rendering.
+// Normalizes OpenAlex data for the React client with database fallback
 async function getPaperData(req, res){
+    const id = req.params.id;
+
     try{
         const response = await axios.get(
-            `https://api.openalex.org/works/${encodeURIComponent(req.params.id)}`
+            `https://api.openalex.org/works/${encodeURIComponent(id)}`,
+            {
+                headers: { "User-Agent": "AetherScholar/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 5000
+            }
         );
         const paper = response.data;
         const authorNames = (paper.authorships || [])
@@ -35,7 +42,7 @@ async function getPaperData(req, res){
         const authors = authorNames.slice(0, 3).join(" • ") +
             (authorNames.length > 3 ? ` +${authorNames.length - 3} more` : "");
 
-        res.json({
+        return res.json({
             paper: {
                 id: paper.id.split("/").pop(),
                 title: paper.display_name || "Untitled Research Paper",
@@ -49,18 +56,44 @@ async function getPaperData(req, res){
             }
         });
     }catch(err){
-        console.error("Paper API error:", err.message);
-        res.status(500).json({ error: "Unable to load this paper." });
+        console.warn(`OpenAlex paper fetch failed (${err.message}). Checking local cache for: ${id}...`);
+
+        try {
+            const cachedPaper = await Paper.findOne({ openAlexId: id });
+            if (cachedPaper) {
+                const authors = (cachedPaper.authors || []).map(a => a.name).slice(0, 3).join(" • ") || "Scholarly Contributor";
+                return res.json({
+                    paper: {
+                        id: cachedPaper.openAlexId,
+                        title: cachedPaper.title,
+                        authors: authors,
+                        journal: cachedPaper.journal || "Academic Publication",
+                        year: cachedPaper.publicationYear || "2026",
+                        doi: cachedPaper.doi,
+                        openAccess: cachedPaper.openAccess || false,
+                        abstract: cachedPaper.abstract || "Abstract unavailable.",
+                        citations: citationService.generateCitations(cachedPaper)
+                    }
+                });
+            }
+        } catch (dbErr) {
+            console.error("Local paper cache error:", dbErr.message);
+        }
+
+        return res.status(500).json({ error: "Unable to load this paper." });
     }
 }
 
-// Loads paper page
+// Loads paper page (legacy EJS fallback)
 async function showPaper(req,res){
     try{
         const id = req.params.id;
         const url = `https://api.openalex.org/works/${id}`;
 
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+            headers: { "User-Agent": "AetherScholar/1.0 (mailto:scholar@aether.ai)" },
+            timeout: 5000
+        });
 
         const paper = response.data;
         const citations = citationService.generateCitations(paper);
@@ -68,8 +101,6 @@ async function showPaper(req,res){
             paper.abstract_inverted_index
         );
 
-        console.log("Best OA Location:",paper.best_oa_location);
-        console.log("Primary Location:",paper.primary_location);
         const searchQuery = req.query.q || "";
 
         const authorNames = paper.authorships.map(
@@ -113,28 +144,44 @@ async function showPaper(req,res){
 
 // Generates aether summary
 async function generateSummary(req,res){
-    try{
-        const id = req.params.id;
-        const url = `https://api.openalex.org/works/${id}`;
-        const response = await axios.get(url);
-        const paper = response.data;
+    const id = req.params.id;
 
-        const abstract = reconstructAbstract(
-            paper.abstract_inverted_index
-        );
+    try{
+        let title = "";
+        let abstract = "";
+
+        try {
+            const url = `https://api.openalex.org/works/${id}`;
+            const response = await axios.get(url, {
+                headers: { "User-Agent": "AetherScholar/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 5000
+            });
+            title = response.data.display_name;
+            abstract = reconstructAbstract(response.data.abstract_inverted_index);
+        } catch {
+            const cachedPaper = await Paper.findOne({ openAlexId: id });
+            if (cachedPaper) {
+                title = cachedPaper.title;
+                abstract = cachedPaper.abstract;
+            }
+        }
+
+        if (!title) {
+            return res.status(500).json({ summary: "Paper details currently unavailable for summary." });
+        }
 
         const summary = await aiService.getSummary(
-            paper.display_name,
+            title,
             abstract
         );
 
-        res.json({
+        return res.json({
             summary
         });
 
     }catch(err){
-        console.log(err);
-        res.status(500).json({
+        console.error("Generate summary error:", err.message);
+        return res.status(500).json({
             summary:"Unable to generate summary."
         });
     }
@@ -142,27 +189,43 @@ async function generateSummary(req,res){
 
 // Generates keywords
 async function generateKeywords(req,res){
+    const id = req.params.id;
+
     try{
-        const id = req.params.id;
-        const url = `https://api.openalex.org/works/${id}`;
-        const response = await axios.get(url);
-        const paper = response.data;
-        
-        const abstract = reconstructAbstract(
-            paper.abstract_inverted_index
-        );
+        let title = "";
+        let abstract = "";
+
+        try {
+            const url = `https://api.openalex.org/works/${id}`;
+            const response = await axios.get(url, {
+                headers: { "User-Agent": "AetherScholar/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 5000
+            });
+            title = response.data.display_name;
+            abstract = reconstructAbstract(response.data.abstract_inverted_index);
+        } catch {
+            const cachedPaper = await Paper.findOne({ openAlexId: id });
+            if (cachedPaper) {
+                title = cachedPaper.title;
+                abstract = cachedPaper.abstract;
+            }
+        }
+
+        if (!title) {
+            return res.status(500).json({ keywords: [] });
+        }
         
         const keywords = await aiService.getKeywords(
-            paper.display_name,
+            title,
             abstract
         );
 
-        res.json({
+        return res.json({
             keywords
         });
     }catch(err){
-        console.log(err);
-        res.status(500).json({
+        console.error("Generate keywords error:", err.message);
+        return res.status(500).json({
             keywords:[]
         });
     }
@@ -183,10 +246,32 @@ async function chatWithPaper(req,res){
         console.log("CHAT REQUEST:", id);
         console.log("QUESTION:", question);
 
-        // Fetch paper from OpenAlex
-        const url = `https://api.openalex.org/works/${id}`;
-        const response = await axios.get(url);
-        const paper = response.data;
+        let paper = null;
+        try {
+            const url = `https://api.openalex.org/works/${id}`;
+            const response = await axios.get(url, {
+                headers: { "User-Agent": "AetherScholar/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 5000
+            });
+            paper = response.data;
+        } catch {
+            const cached = await Paper.findOne({ openAlexId: id });
+            if (cached) {
+                paper = {
+                    id: cached.openAlexId,
+                    display_name: cached.title,
+                    abstract_inverted_index: (cached.abstract || "").split(" ").reduce((acc, w, idx) => {
+                        acc[w] = [idx];
+                        return acc;
+                    }, {}),
+                    locations: cached.pdfUrl ? [{ pdf_url: cached.pdfUrl }] : []
+                };
+            }
+        }
+
+        if (!paper) {
+            return res.status(404).json({ error: "Paper not found for chat." });
+        }
 
         // Collect every possible PDF URL
         const pdfUrls = [];

@@ -1,18 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PaperCard from "../components/PaperCard";
+import RankingToolbar from "../components/RankingToolbar";
 import { searchPapers } from "../services/api";
+import { RANKING_MODES, rankPapersByWeights } from "../utils/scoring";
+import AetherBrand from "../components/AetherBrand";
+import UserMenu from "../components/UserMenu";
 import "./SearchResults.css";
 
-function SearchResults(){
+// In-memory cache so navigating back from a paper never reloads or reranks
+const searchCache = new Map();
+
+function SearchResults() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const query = (searchParams.get("q") || "").trim();
-    const [papers, setPapers] = useState([]);
-    const [loading, setLoading] = useState(Boolean(query));
+
+    // Initialize papers from cache if returning from paper page
+    const cachedInitial = searchCache.get(query);
+    const [papers, setPapers] = useState(cachedInitial || []);
+    const [loading, setLoading] = useState(!cachedInitial && Boolean(query));
     const [error, setError] = useState("");
     const [newQuery, setNewQuery] = useState(query);
     const [stepIndex, setStepIndex] = useState(0);
+    const [, setSaveVersion] = useState(0);
+
+    // Multi-factor ranking mode & custom weights state
+    const [activeMode, setActiveMode] = useState("balanced");
+    const [weights, setWeights] = useState(RANKING_MODES.balanced.weights);
 
     const LOADING_STEPS = [
         "Connecting to scholarly knowledge graph...",
@@ -35,52 +50,124 @@ function SearchResults(){
 
     useEffect(() => {
         setNewQuery(query);
-        if(!query){
+        if (!query) {
             setPapers([]);
             setLoading(false);
             return;
         }
 
-        let active = true;
+        // Persist query so breadcrumbs on paper pages can navigate back to exact search
+        sessionStorage.setItem("aether_last_search_query", query);
+
+        // Fast Cache Hit: Don't reload or rerank if user came back from a paper!
+        const cached = searchCache.get(query);
+        if (cached && Array.isArray(cached) && cached.length > 0) {
+            setPapers(cached);
+            setLoading(false);
+            setError("");
+            return;
+        }
+
+        try {
+            const sessionData = sessionStorage.getItem(`aether_search_${query}`);
+            if (sessionData) {
+                const parsed = JSON.parse(sessionData);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    searchCache.set(query, parsed);
+                    setPapers(parsed);
+                    setLoading(false);
+                    setError("");
+                    return;
+                }
+            }
+        } catch (e) {
+            // Ignore session storage errors
+        }
+
+        let isMounted = true;
         setLoading(true);
         setError("");
-        searchPapers(query)
-            .then(data => {
-                if(active) setPapers(data.papers.map(paper => ({ ...paper, searchQuery: query })));
-            })
-            .catch(err => active && setError(err.message))
-            .finally(() => active && setLoading(false));
 
-        return () => { active = false; };
+        searchPapers(query)
+            .then((data) => {
+                if (!isMounted) return;
+                const results = Array.isArray(data) ? data : (data.papers || []);
+                searchCache.set(query, results);
+                try {
+                    sessionStorage.setItem(`aether_search_${query}`, JSON.stringify(results));
+                } catch (e) {}
+                setPapers(results);
+                setLoading(false);
+            })
+            .catch((err) => {
+                if (!isMounted) return;
+                setError(err.message || "Failed to fetch research papers.");
+                setLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
     }, [query]);
 
-    function submitSearch(event){
-        event.preventDefault();
+    // DYNAMIC MULTI-FACTOR RE-RANKING (0ms client calculation)
+    const displayedPapers = useMemo(() => {
+        return rankPapersByWeights(papers, weights);
+    }, [papers, weights]);
+
+    function submitSearch(e) {
+        e.preventDefault();
         const nextQuery = newQuery.trim();
-        if(nextQuery) navigate(`/search?q=${encodeURIComponent(nextQuery)}`);
+        if (nextQuery) navigate(`/search?q=${encodeURIComponent(nextQuery)}`);
     }
 
     return (
         <main className="results-container react-results-container">
             <header className="search-top-bar">
-                <Link to="/">← Back to Search</Link>
-                <Link className="search-logo" to="/">Aether</Link>
-                <Link className="saved-link" to="/saved">Saved</Link>
+                <Link to="/" className="back-search-btn">← Back to Search</Link>
+                <AetherBrand size="md" variant="horizontal" />
+                <div style={{ display: "flex", alignItems: "center", gap: "22px", justifySelf: "end" }}>
+                    <Link className="saved-link" to="/saved">Saved</Link>
+                    <UserMenu />
+                </div>
             </header>
 
             <form className="results-search" onSubmit={submitSearch}>
-                <input value={newQuery} onChange={event => setNewQuery(event.target.value)} placeholder="Search research papers..." aria-label="Search research papers" />
+                <input
+                    type="text"
+                    value={newQuery}
+                    onChange={(e) => setNewQuery(e.target.value)}
+                    placeholder="Search research papers, algorithms, authors..."
+                    required
+                />
                 <button type="submit">Search</button>
             </form>
 
             <section className="results-header">
-                <h1>{query ? <>Showing results for “{query}”</> : "Search research papers"}</h1>
-                <p>{loading ? "Evaluating scholarly sources with Aether AI..." : `${papers.length} Research Papers`}<br />{query && <>Ranked using <strong>Aether Relevance Metric</strong></>}</p>
+                <h1>Results for "{query}"</h1>
+                <p className="results-subheading">
+                    Ranked using Aether Relevance Metric
+                </p>
+                <p className="results-count-text">
+                    {loading
+                        ? "Discovering and evaluating research papers..."
+                        : `${displayedPapers.length} peer-reviewed research papers discovered`}
+                </p>
             </section>
             <hr />
 
+            {/* MULTI-FACTOR RANKING TOOLBAR */}
+            {!loading && !error && displayedPapers.length > 0 && (
+                <RankingToolbar
+                    activeMode={activeMode}
+                    weights={weights}
+                    onModeChange={setActiveMode}
+                    onWeightsChange={setWeights}
+                />
+            )}
+
             {loading && (
-                <div className="search-loading-container">
+                <div className="search-loading-container" aria-live="polite">
                     <div className="loading-radar-card">
                         <div className="aether-spinner-wrapper">
                             <div className="aether-spinner-ring"></div>
@@ -121,8 +208,15 @@ function SearchResults(){
             )}
             {error && <div className="empty-state error-state"><h2>Search unavailable</h2><p>{error}</p></div>}
             {!loading && !error && !query && <div className="empty-state"><h2>Start with a topic</h2><p>Search by subject, paper title, or author.</p></div>}
-            {!loading && !error && query && papers.length === 0 && <div className="empty-state"><h2>No research papers found.</h2><p>Try searching with broader keywords.</p></div>}
-            {!loading && !error && papers.map(paper => <PaperCard key={paper.id} paper={paper} onSavedChange={() => setSaveVersion(version => version + 1)} />)}
+            {!loading && !error && query && displayedPapers.length === 0 && <div className="empty-state"><h2>No research papers found.</h2><p>Try searching with broader keywords.</p></div>}
+            {!loading && !error && displayedPapers.map(paper => (
+                <PaperCard
+                    key={paper.id}
+                    paper={paper}
+                    searchQuery={query}
+                    onSavedChange={() => setSaveVersion(v => v + 1)}
+                />
+            ))}
         </main>
     );
 }

@@ -1,0 +1,78 @@
+/* =========================================================
+   SIGNUP PAGE SPECIFIC STYLES
+   ========================================================= */
+
+@import "./Login.css";
+
+.signup-container {
+    max-width: 480px;
+}
+
+/* Interactive Password Checklist */
+.password-checklist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid #1E293B;
+    border-radius: 10px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748B;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.checklist-item .check-icon {
+    font-size: 13px;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(100, 116, 139, 0.15);
+    color: #64748B;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* Met condition */
+.checklist-item.met {
+    color: #34D399;
+    font-weight: 500;
+}
+
+.checklist-item.met .check-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    transform: scale(1.1);
+}
+
+/* Password Match Indicator */
+.match-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.match-hint.matched {
+    color: #34D399;
+}
+
+.match-hint.mismatched {
+    color: #F87171;
+}
+
+@media (max-width: 480px) {
+    .password-checklist {
+        grid-template-columns: 1fr;
+    }
+}

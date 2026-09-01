@@ -2,5 +2,108 @@
 .paper-status h1{ font-family:"Outfit",sans-serif; font-size:38px; }
 .paper-status p{ color:#64748B; }
 .paper-status a{ color:#2563EB; font-weight:700; }
-.paper-save-button{ padding:10px 15px; border:1px solid #BFDBFE; border-radius:999px; background:#EFF6FF; color:#1D4ED8; cursor:pointer; font-size:13px; font-weight:700; }
-.paper-save-button:hover{ border-color:#60A5FA; background:#DBEAFE; }
+
+.top-bar-left{
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.top-bar-left .breadcrumb{
+    margin: 0;
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.paper-save-button{
+    padding: 11px 20px;
+    border: 1.5px solid #2563EB;
+    border-radius: 999px;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.paper-save-button:hover{
+    border-color: #1D4ED8;
+    background: #DBEAFE;
+    color: #1E40AF;
+    transform: translateY(-1px);
+}
+
+.paper-save-button.saved{
+    background: #2563EB;
+    color: #FFFFFF;
+    border-color: #2563EB;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+
+.paper-save-button.saved:hover{
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+}
+
+/* WORKSPACE SCALING ENHANCEMENTS */
+.ai-workspace {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 60px 4.5%;
+}
+
+.summary-card {
+    min-height: 280px;
+    padding: 42px;
+}
+
+.summary-card p {
+    font-size: 17.5px;
+    line-height: 1.85;
+    color: #1E293B;
+}
+
+.chat-panel {
+    height: 100%;
+}
+
+.chat-messages {
+    height: 440px;
+    padding: 24px;
+}
+
+.chat-form input {
+    font-size: 15px;
+    padding: 16px 20px;
+}
+
+.paper-content {
+    max-width: 1560px;
+    margin: 0 auto;
+}
+
+.abstract-text {
+    font-size: 17.5px;
+    line-height: 1.85;
+    color: #334155;
+}
+
+.citations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 24px;
+}
+
+.citation-card {
+    padding: 24px;
+}
+
+.citation-card p {
+    font-size: 15px;
+    line-height: 1.7;
+}

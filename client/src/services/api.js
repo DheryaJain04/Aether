@@ -1,7 +1,16 @@
 const API_BASE_URL = "/api";
 
-async function request(url, options){
-    const response = await fetch(url, options);
+async function request(url, options = {}){
+    const config = {
+        ...options,
+        credentials: "include", // Required for httpOnly cookie passing
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        }
+    };
+
+    const response = await fetch(url, config);
     const data = await response.json().catch(() => ({}));
 
     if(!response.ok){
@@ -11,6 +20,7 @@ async function request(url, options){
     return data;
 }
 
+// Paper Search & Details
 export function searchPapers(query){
     return request(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
 }
@@ -30,7 +40,31 @@ export function getKeywords(id){
 export function askPaper(id, question){
     return request(`/paper/${encodeURIComponent(id)}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question })
     });
+}
+
+// Authentication Endpoints
+export function signupUser(data){
+    return request(`${API_BASE_URL}/auth/signup`, {
+        method: "POST",
+        body: JSON.stringify(data)
+    });
+}
+
+export function loginUser(credentials){
+    return request(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        body: JSON.stringify(credentials)
+    });
+}
+
+export function logoutUser(){
+    return request(`${API_BASE_URL}/auth/logout`, {
+        method: "POST"
+    });
+}
+
+export function getCurrentUser(){
+    return request(`${API_BASE_URL}/auth/me`);
 }

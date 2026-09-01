@@ -42,9 +42,10 @@ function getPaperText(paper){
         paper.display_name || "";
 
     const abstract =
+        paper.raw_abstract ||
         reconstructAbstract(
             paper.abstract_inverted_index
-        );
+        ) || "";
 
     const topics =
         (paper.topics || [])

@@ -166,10 +166,14 @@ function calculateImpactScores(papers){
                 momentumValues[index]/
                 maxMomentum;
 
-            return clamp(
-                0.60*citationScore+
-                0.40*momentumScore
-            );
+            const rawImpact = 0.60 * citationScore + 0.40 * momentumScore;
+
+            // Scientometric citation-lag incubation: freshly minted papers (< 2 years) get a fair baseline
+            const pubYear = paper.publication_year || CURRENT_YEAR;
+            const age = Math.max(0, CURRENT_YEAR - pubYear);
+            const incubationBaseline = age < 2 ? 0.20 * (1 - age / 2) : 0;
+
+            return clamp(Math.max(rawImpact, incubationBaseline));
         }
     );
 }
@@ -242,34 +246,29 @@ function getSourceTypeScore(sourceType){
 }
 
 function calculateVenueScore(paper){
-    const location =
-        paper.primary_location;
+    const location = paper.primary_location;
+    const source = location?.source;
+    const venueName = source?.display_name || paper.journal || "";
 
-    const source =
-        location?.source;
+    const rawType = source?.type || (paper.type === "journal-article" ? "journal" : paper.type === "proceedings-article" ? "conference" : "repository");
+    let score = getSourceTypeScore(rawType);
 
-    if(!source){
-        return 0.40;
-    }
-
-    let score =
-        getSourceTypeScore(
-            source.type
-        );
-
-    if(source.is_core){
+    if(source?.is_core){
         score += 0.20;
     }
 
-    if(source.is_in_doaj){
+    if(source?.is_in_doaj){
         score += 0.10;
     }
 
-    if(
-        location.is_published ||
-        location.is_accepted
-    ){
+    if(location?.is_published || location?.is_accepted || paper.doi){
         score += 0.10;
+    }
+
+    // Recognize top academic publishers and prestigious scholarly indices
+    const TOP_VENUES = /nature|science|ieee|acm|springer|elsevier|oxford|cambridge|wiley|cell|lancet|pnas|neurips|icml|cvpr|acl|aaai|embc|frontiers|plos/i;
+    if (venueName && TOP_VENUES.test(venueName)) {
+        score += 0.15;
     }
 
     return clamp(score);
