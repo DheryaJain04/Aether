@@ -1,139 +1,86 @@
-.aether-navbar {
+/* =========================================================
+   AETHER UNIFIED HEADER & NAVBAR STYLES
+   ========================================================= */
+
+.aether-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 32px;
-    max-width: 1320px;
-    margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
+    position: relative;
+    z-index: 40;
 }
 
-.navbar-logo {
-    font-family: "Outfit", sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #1F2937;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: -0.5px;
-}
-
-.navbar-sparkle {
-    color: #2563EB;
-    font-size: 20px;
-}
-
-.navbar-actions {
+.header-left {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
+    flex-shrink: 0;
 }
 
-.navbar-saved-link {
-    color: #4B5563;
-    font-weight: 600;
-    font-size: 14.5px;
-    text-decoration: none;
-    transition: color 0.15s;
-}
-
-.navbar-saved-link:hover {
-    color: #2563EB;
-}
-
-.navbar-auth-links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.navbar-login-btn {
-    color: #2563EB;
-    font-weight: 600;
-    font-size: 14.5px;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: background 0.15s, color 0.15s;
-}
-
-.navbar-login-btn:hover {
-    background: #EFF6FF;
-}
-
-.navbar-signup-btn {
-    background: #2563EB;
-    color: #FFFFFF;
-    font-weight: 600;
-    font-size: 14px;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-    transition: background 0.15s, transform 0.15s;
-}
-
-.navbar-signup-btn:hover {
-    background: #1D4ED8;
-    transform: translateY(-1px);
-}
-
-.navbar-user-menu {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.user-badge {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    background: #F1F5F9;
-    padding: 5px 12px 5px 6px;
-    border-radius: 999px;
-    border: 1px solid #E2E8F0;
-}
-
-.user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #2563EB, #1D4ED8);
-    color: #FFFFFF;
+.header-center {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
+    flex: 1;
 }
 
-.user-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1E293B;
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
-.navbar-logout-btn {
+/* Subtle vertical divider between page nav and user account actions */
+.header-nav-divider {
+    width: 1px;
+    height: 22px;
+    background: #E2E8F0;
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------
+   HEADER VARIANTS
+   --------------------------------------------------------- */
+
+/* Floating Glassmorphic Pill Header (for Home) */
+.header-floating {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 999px;
+    padding: 8px 16px 8px 18px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+/* Default Top Bar */
+.header-default {
+    padding: 16px 32px;
     background: transparent;
-    border: 1px solid #CBD5E1;
-    color: #64748B;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
 }
 
-.navbar-logout-btn:hover {
-    background: #FEE2E2;
-    border-color: #FCA5A5;
-    color: #DC2626;
+/* Bordered Header (for Search & App workspaces) */
+.header-bordered {
+    padding: 16px 32px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+@media (max-width: 640px) {
+    .header-nav-divider {
+        display: none;
+    }
+    
+    .saved-link-label {
+        display: none;
+    }
+
+    a.aether-saved-link-btn,
+    .aether-saved-link-btn {
+        padding: 7px 10px;
+    }
 }

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { askPaper, getKeywords, getPaper, getSummary } from "../services/api";
 import { isPaperSaved, toggleSavedPaper } from "../services/savedPapers";
 import AetherBrand from "../components/AetherBrand";
+import SavedPapersLink from "../components/SavedPapersLink";
 import UserMenu from "../components/UserMenu";
 import "./PaperDetail.css";
 
@@ -14,6 +16,9 @@ const suggestedQuestions = [
 ];
 
 function PaperDetail() {
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const [paper, setPaper] = useState(null);
@@ -91,6 +96,10 @@ function PaperDetail() {
 
     function toggleSave() {
         if (!paper) return;
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
         setSaved(toggleSavedPaper(paper));
     }
 
@@ -123,8 +132,9 @@ function PaperDetail() {
                         <Link to={effectiveQuery ? `/search?q=${encodeURIComponent(effectiveQuery)}` : "/search"}>Search Results</Link><span>/</span><span className="current">Paper</span>
                     </nav>
                 </div>
-                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "22px" }}>
-                    <Link to="/saved" style={{ color: "#4B5563", fontWeight: 600, fontSize: "14.5px", textDecoration: "none" }}>Saved</Link>
+                <div className="top-bar-actions">
+                    {isAuthenticated && <SavedPapersLink />}
+                    {isAuthenticated && <div className="top-bar-divider" aria-hidden="true"></div>}
                     <UserMenu />
                 </div>
             </header>

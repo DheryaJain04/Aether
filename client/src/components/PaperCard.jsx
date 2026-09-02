@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { isPaperSaved, toggleSavedPaper } from "../services/savedPapers";
 import "./PaperCard.css";
 
 function PaperCard({ paper, searchQuery, onSavedChange }){
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [saved, setSaved] = useState(() => isPaperSaved(paper.id));
     const [showBreakdown, setShowBreakdown] = useState(false);
 
@@ -21,6 +25,10 @@ function PaperCard({ paper, searchQuery, onSavedChange }){
     }, [paper.id]);
 
     function handleSave(){
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
         const nowSaved = toggleSavedPaper(paper);
         setSaved(nowSaved);
         onSavedChange?.(nowSaved);

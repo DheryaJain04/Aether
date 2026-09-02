@@ -5,14 +5,40 @@
         radial-gradient(circle at 85% 82%, rgba(20,184,166,.10), transparent 30%);
 }
 
+/* Floating Glassmorphic Pill Header */
 .home-nav{
     position:absolute;
-    top:28px;
-    left:clamp(20px, 5vw, 72px);
-    right:clamp(20px, 5vw, 72px);
+    top:24px;
+    left:50%;
+    transform:translateX(-50%);
+    width:calc(100% - clamp(28px, 6vw, 96px));
+    max-width:1240px;
     display:flex;
     align-items:center;
     justify-content:space-between;
+    padding:8px 16px 8px 18px;
+    background:rgba(255, 255, 255, 0.85);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(226, 232, 240, 0.9);
+    border-radius:999px;
+    box-shadow:0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+    z-index:50;
+    box-sizing:border-box;
+}
+
+.home-nav-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.home-nav-divider{
+    width:1px;
+    height:22px;
+    background:#E2E8F0;
+    margin:0 4px;
+    flex-shrink:0;
 }
 
 .home-logo{
@@ -22,12 +48,14 @@
     font-weight:700;
 }
 
-.home-nav a{
-    color:#2563EB;
-    font-weight:600;
-}
-
-@media(max-width:620px){
+@media(max-width:640px){
+    .home-nav{
+        padding:8px 12px;
+        border-radius:20px;
+    }
+    .home-nav-divider{
+        display:none;
+    }
     .hero h1{ font-size:54px; }
     .hero h2{ font-size:24px; }
     .search-box{ flex-direction:column; }

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getSavedPapers } from "../services/savedPapers";
 import "./UserMenu.css";
 
 function getInitials(name, email) {
@@ -26,21 +27,43 @@ function getInitials(name, email) {
 export default function UserMenu({ className = "" }) {
     const { user, isAuthenticated, logout } = useAuth();
     const [open, setOpen] = useState(false);
+    const [savedCount, setSavedCount] = useState(() => getSavedPapers().length);
     const menuRef = useRef(null);
     const navigate = useNavigate();
 
-    // Close dropdown on outside click
+    // Sync saved papers count for dropdown badge
+    useEffect(() => {
+        function updateCount() {
+            setSavedCount(getSavedPapers().length);
+        }
+        window.addEventListener("aether-saved-updated", updateCount);
+        window.addEventListener("storage", updateCount);
+        return () => {
+            window.removeEventListener("aether-saved-updated", updateCount);
+            window.removeEventListener("storage", updateCount);
+        };
+    }, []);
+
+    // Close dropdown on outside click or Escape key
     useEffect(() => {
         function handleClickOutside(event) {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setOpen(false);
             }
         }
+        function handleKeyDown(event) {
+            if (event.key === "Escape") {
+                setOpen(false);
+            }
+        }
+
         if (open) {
             document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("keydown", handleKeyDown);
         }
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
         };
     }, [open]);
 
@@ -73,6 +96,7 @@ export default function UserMenu({ className = "" }) {
                 className={`user-menu-trigger ${open ? "is-open" : ""}`}
                 onClick={() => setOpen((prev) => !prev)}
                 aria-expanded={open}
+                aria-haspopup="menu"
                 aria-label="User profile menu"
             >
                 {/* Circular User Avatar with 2 Initials */}
@@ -80,12 +104,14 @@ export default function UserMenu({ className = "" }) {
                     <span>{initials}</span>
                 </div>
                 <span className="user-trigger-name">{displayName}</span>
-                <span className={`user-trigger-chevron ${open ? "open" : ""}`}>▾</span>
+                <span className={`user-trigger-chevron ${open ? "open" : ""}`} aria-hidden="true">
+                    ▾
+                </span>
             </button>
 
             {/* Dropdown Menu */}
             {open && (
-                <div className="user-dropdown-card">
+                <div className="user-dropdown-card" role="menu" aria-label="User options">
                     <div className="user-dropdown-header">
                         <div className="dropdown-avatar-large">
                             {initials}
@@ -93,6 +119,10 @@ export default function UserMenu({ className = "" }) {
                         <div className="dropdown-user-details">
                             <span className="dropdown-user-name">{user?.name || "Scholar"}</span>
                             <span className="dropdown-user-email">{user?.email || ""}</span>
+                            <div className="dropdown-account-badge">
+                                <span className="account-badge-sparkle">✦</span>
+                                <span>Scholar Account</span>
+                            </div>
                         </div>
                     </div>
 
@@ -102,18 +132,34 @@ export default function UserMenu({ className = "" }) {
                         <Link
                             to="/saved"
                             className="dropdown-item"
+                            role="menuitem"
                             onClick={() => setOpen(false)}
                         >
-                            <span className="dropdown-item-icon">★</span>
-                            <span>Saved Papers</span>
+                            <span className="dropdown-item-icon" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                </svg>
+                            </span>
+                            <span className="dropdown-item-text">Saved Papers</span>
+                            {savedCount > 0 && (
+                                <span className="dropdown-item-badge">
+                                    {savedCount > 99 ? "99+" : savedCount}
+                                </span>
+                            )}
                         </Link>
                         <Link
                             to="/"
                             className="dropdown-item"
+                            role="menuitem"
                             onClick={() => setOpen(false)}
                         >
-                            <span className="dropdown-item-icon">🔍</span>
-                            <span>New Search</span>
+                            <span className="dropdown-item-icon" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+                            <span className="dropdown-item-text">New Search</span>
                         </Link>
                     </div>
 
@@ -123,9 +169,16 @@ export default function UserMenu({ className = "" }) {
                         <button
                             type="button"
                             className="dropdown-logout-btn"
+                            role="menuitem"
                             onClick={handleLogout}
                         >
-                            <span className="dropdown-item-icon">⎋</span>
+                            <span className="dropdown-item-icon" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                    <polyline points="16 17 21 12 16 7" />
+                                    <line x1="21" y1="12" x2="9" y2="12" />
+                                </svg>
+                            </span>
                             <span>Sign Out</span>
                         </button>
                     </div>

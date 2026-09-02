@@ -2,6 +2,20 @@
 .paper-status h1{ font-family:"Outfit",sans-serif; font-size:38px; }
 .paper-status p{ color:#64748B; }
 .paper-status a{ color:#2563EB; font-weight:700; }
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    max-width: 1560px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 40;
+    gap: 20px;
+    flex-wrap: wrap;
+}
 
 .top-bar-left{
     display: flex;
@@ -15,6 +29,20 @@
     white-space: nowrap;
     font-size: 15px;
     font-weight: 500;
+}
+
+.top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-bar-divider {
+    width: 1px;
+    height: 22px;
+    background: #E2E8F0;
+    margin: 0 4px;
+    flex-shrink: 0;
 }
 
 .paper-save-button{

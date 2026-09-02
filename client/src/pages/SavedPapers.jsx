@@ -159,9 +159,11 @@ export default function SavedPapers() {
     return (
         <main className="workspace-page">
             <header className="workspace-top-header">
-                <Link to="/" className="back-search-btn">← Back to Search</Link>
-                <AetherBrand size="md" variant="horizontal" />
-                <div style={{ display: "flex", alignItems: "center", justifySelf: "end" }}>
+                <div className="workspace-header-left">
+                    <Link to="/" className="back-search-btn">← Back to Search</Link>
+                    <AetherBrand size="md" variant="horizontal" />
+                </div>
+                <div className="workspace-header-right">
                     <UserMenu />
                 </div>
             </header>

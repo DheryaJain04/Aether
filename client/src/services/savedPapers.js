@@ -32,6 +32,9 @@ export function toggleSavedPaper(paper){
 
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("aether-saved-updated"));
+        }
     } catch (e) {
         console.error("Failed to save paper to localStorage", e);
     }
@@ -49,6 +52,9 @@ export function updateSavedPaper(paperId, updates) {
     });
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("aether-saved-updated"));
+        }
     } catch (e) {}
     return next;
 }

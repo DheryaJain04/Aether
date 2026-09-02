@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AetherBrand from "../components/AetherBrand";
+import SavedPapersLink from "../components/SavedPapersLink";
 import UserMenu from "../components/UserMenu";
 import "./Home.css";
 import "./HomeEnhancements.css";
@@ -15,6 +17,7 @@ const POPULAR_TOPICS = [
 ];
 
 function Home() {
+    const { isAuthenticated } = useAuth();
     const [query, setQuery] = useState("");
     const navigate = useNavigate();
     const [placeholder, setPlaceholder] = useState('Search "Large Language Models"...');
@@ -53,8 +56,9 @@ function Home() {
 
             <nav className="home-nav" aria-label="Main navigation">
                 <AetherBrand size="sm" />
-                <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
-                    <Link to="/saved" className="nav-saved-link">Saved Papers</Link>
+                <div className="home-nav-actions">
+                    {isAuthenticated && <SavedPapersLink />}
+                    {isAuthenticated && <div className="home-nav-divider" aria-hidden="true"></div>}
                     <UserMenu />
                 </div>
             </nav>

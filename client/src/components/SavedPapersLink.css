@@ -1,0 +1,77 @@
+/* =========================================================
+   SAVED PAPERS NAVIGATION PILL LINK
+   ========================================================= */
+
+a.aether-saved-link-btn,
+.aether-saved-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    color: #334155 !important;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    user-select: none;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+a.aether-saved-link-btn:hover,
+.aether-saved-link-btn:hover {
+    border-color: #BFDBFE;
+    background: #F8FAFC;
+    color: #1D4ED8 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+a.aether-saved-link-btn:active,
+.aether-saved-link-btn:active {
+    transform: translateY(0);
+}
+
+.saved-link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563EB;
+    transition: transform 0.2s ease;
+}
+
+a.aether-saved-link-btn:hover .saved-link-icon {
+    transform: scale(1.1);
+}
+
+.saved-link-label {
+    font-family: "Inter", sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.saved-link-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 6px;
+    background: #2563EB;
+    color: #FFFFFF !important;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    line-height: 1;
+    letter-spacing: 0;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
+    animation: badgePulse 0.25s ease-out;
+}
+
+@keyframes badgePulse {
+    0% { transform: scale(0.8); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 1; }
+}

@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import PaperCard from "../components/PaperCard";
 import RankingToolbar from "../components/RankingToolbar";
 import { searchPapers } from "../services/api";
 import { RANKING_MODES, rankPapersByWeights } from "../utils/scoring";
 import AetherBrand from "../components/AetherBrand";
+import SavedPapersLink from "../components/SavedPapersLink";
 import UserMenu from "../components/UserMenu";
 import "./SearchResults.css";
 
@@ -12,6 +14,7 @@ import "./SearchResults.css";
 const searchCache = new Map();
 
 function SearchResults() {
+    const { isAuthenticated } = useAuth();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const query = (searchParams.get("q") || "").trim();
@@ -124,10 +127,13 @@ function SearchResults() {
     return (
         <main className="results-container react-results-container">
             <header className="search-top-bar">
-                <Link to="/" className="back-search-btn">← Back to Search</Link>
-                <AetherBrand size="md" variant="horizontal" />
-                <div style={{ display: "flex", alignItems: "center", gap: "22px", justifySelf: "end" }}>
-                    <Link className="saved-link" to="/saved">Saved</Link>
+                <div className="search-top-bar-left">
+                    <Link to="/" className="back-search-btn">← Back to Search</Link>
+                    <AetherBrand size="md" variant="horizontal" />
+                </div>
+                <div className="search-top-bar-actions">
+                    {isAuthenticated && <SavedPapersLink />}
+                    {isAuthenticated && <div className="search-top-bar-divider" aria-hidden="true"></div>}
                     <UserMenu />
                 </div>
             </header>
