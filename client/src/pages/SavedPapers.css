@@ -57,28 +57,20 @@
     transform: translateY(-1px);
 }
 
-/* Scholar Library page label block */
-.workspace-page-label-block {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    border-left: 2px solid #E2E8F0;
-    padding-left: 16px;
+/* Scholar Library Header Divider & Big Title */
+.workspace-header-divider {
+    width: 1.5px;
+    height: 24px;
+    background: #E2E8F0;
+    margin: 0 4px;
 }
 
-.workspace-page-eyebrow {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #2563EB;
-}
-
-.workspace-page-title {
-    font-size: 0.95rem;
+.workspace-header-title {
+    font-size: 1.35rem;
     font-weight: 800;
     color: #0F172A;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.025em;
+    margin: 0;
     line-height: 1;
 }
 
@@ -86,28 +78,29 @@
 .scholar-lab-entry-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
+    gap: 7px;
+    font-size: 0.84rem;
     font-weight: 600;
-    color: #4B5563;
+    color: #1E40AF;
     text-decoration: none;
-    padding: 7px 14px;
+    padding: 8px 16px;
     border-radius: 10px;
-    border: 1.5px solid #E2E8F0;
-    background: #FFFFFF;
+    border: 1.5px solid #BFDBFE;
+    background: #EFF6FF;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    margin-right: 10px;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+    margin-right: 12px;
     white-space: nowrap;
 }
 
 .scholar-lab-entry-btn:hover {
-    color: #1E40AF;
-    border-color: #BFDBFE;
-    background: #EFF6FF;
+    color: #1D4ED8;
+    border-color: #93C5FD;
+    background: #DBEAFE;
     transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
+
 
 /* 2-COLUMN WORKSPACE CONTAINER */
 .workspace-container {

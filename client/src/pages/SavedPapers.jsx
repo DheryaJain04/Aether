@@ -162,10 +162,8 @@ export default function SavedPapers() {
                 <div className="workspace-header-left">
                     <Link to="/" className="back-search-btn">← Back to Search</Link>
                     <AetherBrand size="md" variant="horizontal" />
-                    <div className="workspace-page-label-block">
-                        <span className="workspace-page-eyebrow">Aether</span>
-                        <span className="workspace-page-title">Scholar Library</span>
-                    </div>
+                    <div className="workspace-header-divider" aria-hidden="true"></div>
+                    <h1 className="workspace-header-title">Scholar Library</h1>
                 </div>
                 <div className="workspace-header-right">
                     <Link to="/lab" className="scholar-lab-entry-btn" title="Open Scholar Lab — cross-paper AI tools">
