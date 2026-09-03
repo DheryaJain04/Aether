@@ -1,11 +1,11 @@
 /* =========================================================
-   SCHOLAR RESEARCH WORKSPACE STYLES
+   SCHOLAR RESEARCH WORKSPACE STYLES (SCHOLAR LIBRARY)
    ========================================================= */
 
 .workspace-page {
     width: 100%;
     min-height: 100vh;
-    background: #F8FAFC;
+    background: radial-gradient(circle at 50% 0%, #E8F2FE 0%, #F0F6FE 40%, #F6FAFF 100%);
     font-family: "Inter", -apple-system, sans-serif;
     color: #0F172A;
     padding-bottom: 80px;
@@ -16,12 +16,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 18px 40px;
-    background: #FFFFFF;
-    border-bottom: 1px solid #E2E8F0;
+    background: rgba(255, 255, 255, 0.94);
+    border-bottom: 1px solid #DBEAFE;
+    backdrop-filter: blur(12px);
     margin-bottom: 32px;
     gap: 20px;
     flex-wrap: wrap;
 }
+
 
 .workspace-header-left {
     display: flex;
@@ -59,31 +61,34 @@
 
 /* Scholar Library Header Divider & Big Title */
 .workspace-header-divider {
-    width: 1.5px;
-    height: 24px;
+    width: 2px;
+    height: 32px;
     background: #E2E8F0;
-    margin: 0 4px;
+    margin: 0 6px;
 }
 
 .workspace-header-title {
-    font-size: 1.35rem;
+    font-family: "Outfit", "Inter", sans-serif;
+    font-size: 28px;
     font-weight: 800;
     color: #0F172A;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
     margin: 0;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Scholar Lab entry button in Library header */
 .scholar-lab-entry-btn {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    font-size: 0.84rem;
+    gap: 8px;
+    font-size: 0.92rem;
     font-weight: 600;
     color: #1E40AF;
     text-decoration: none;
-    padding: 8px 16px;
+    padding: 9px 18px;
     border-radius: 10px;
     border: 1.5px solid #BFDBFE;
     background: #EFF6FF;
@@ -100,6 +105,7 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
+
 
 
 /* 2-COLUMN WORKSPACE CONTAINER */

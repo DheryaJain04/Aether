@@ -10,7 +10,7 @@ import "./ScholarLab.css";
 const TOOLS = [
     {
         id: "synthesis",
-        icon: "🧬",
+        icon: "✦",
         label: "Literature Synthesis",
         path: "/lab/synthesis",
         limit: 5,
@@ -41,6 +41,7 @@ const TOOLS = [
         desc: "Identify unexplored research areas"
     }
 ];
+
 
 // ── Add Papers Modal ───────────────────────────────────────────
 function AddPapersModal({ onClose }) {
