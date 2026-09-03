@@ -162,8 +162,15 @@ export default function SavedPapers() {
                 <div className="workspace-header-left">
                     <Link to="/" className="back-search-btn">← Back to Search</Link>
                     <AetherBrand size="md" variant="horizontal" />
+                    <div className="workspace-page-label-block">
+                        <span className="workspace-page-eyebrow">Aether</span>
+                        <span className="workspace-page-title">Scholar Library</span>
+                    </div>
                 </div>
                 <div className="workspace-header-right">
+                    <Link to="/lab" className="scholar-lab-entry-btn" title="Open Scholar Lab — cross-paper AI tools">
+                        <span>⚗️</span> Scholar Lab
+                    </Link>
                     <UserMenu />
                 </div>
             </header>
@@ -172,8 +179,8 @@ export default function SavedPapers() {
                 {/* LEFT SIDEBAR: PLAYLIST NAVIGATION */}
                 <aside className="workspace-sidebar" aria-label="Research Playlists">
                     <div className="sidebar-header">
-                        <span className="sidebar-badge">RESEARCH WORKSPACE</span>
-                        <h2>Library & Playlists</h2>
+                        <span className="sidebar-badge">SCHOLAR LIBRARY</span>
+                        <h2>Library &amp; Playlists</h2>
                     </div>
 
                     <div className="sidebar-nav-group">

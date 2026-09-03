@@ -1,0 +1,20 @@
+.synthesis-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.synthesis-papers-used {
+    font-size: 0.84rem;
+    color: #5A6280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.synthesis-papers-used strong {
+    color: #93C5FD;
+}

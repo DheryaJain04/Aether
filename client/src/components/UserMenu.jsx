@@ -140,12 +140,26 @@ export default function UserMenu({ className = "" }) {
                                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                                 </svg>
                             </span>
-                            <span className="dropdown-item-text">Saved Papers</span>
+                            <span className="dropdown-item-text">Scholar Library</span>
                             {savedCount > 0 && (
                                 <span className="dropdown-item-badge">
                                     {savedCount > 99 ? "99+" : savedCount}
                                 </span>
                             )}
+                        </Link>
+                        <Link
+                            to="/lab"
+                            className="dropdown-item"
+                            role="menuitem"
+                            onClick={() => setOpen(false)}
+                        >
+                            <span className="dropdown-item-icon" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18" />
+                                </svg>
+                            </span>
+                            <span className="dropdown-item-text">Scholar Lab</span>
+                            <span className="dropdown-item-new-badge">NEW</span>
                         </Link>
                         <Link
                             to="/"
@@ -162,6 +176,7 @@ export default function UserMenu({ className = "" }) {
                             <span className="dropdown-item-text">New Search</span>
                         </Link>
                     </div>
+
 
                     <div className="user-dropdown-divider"></div>
 

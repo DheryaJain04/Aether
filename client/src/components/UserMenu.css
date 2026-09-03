@@ -344,3 +344,17 @@ a.user-menu-signup-btn:active,
     color: #DC2626;
     transform: translateX(1px);
 }
+
+/* Scholar Lab NEW badge in dropdown */
+.dropdown-item-new-badge {
+    margin-left: auto;
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    padding: 2px 6px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}

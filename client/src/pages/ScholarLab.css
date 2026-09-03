@@ -1,0 +1,786 @@
+/* ================================================================
+   SCHOLAR LAB — Workbench Stylesheet
+   Palette: deep navy workbench (#0B0E1A base) with blue family accents
+   and a warm amber highlight for the active bench / tool state.
+   Stays on-brand with the rest of Aether while feeling distinctly
+   more focused and tool-like.
+================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* ── Root Layout ─────────────────────────────────────────────── */
+
+.lab-root {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    background: #0B0E1A;
+    color: #D4D8E8;
+    font-family: "Inter", sans-serif;
+    overflow: hidden;
+    position: relative;
+}
+
+/* subtle grid texture on the workbench */
+.lab-root::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+
+.lab-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 58px;
+    background: rgba(11, 14, 26, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.lab-header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.lab-header-back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #7B8299;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    letter-spacing: 0.01em;
+}
+
+.lab-header-back:hover {
+    color: #D4D8E8;
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+}
+
+.lab-header-back svg {
+    width: 14px;
+    height: 14px;
+}
+
+.lab-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.lab-page-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #F59E0B;
+    opacity: 0.85;
+}
+
+.lab-page-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #E8EBF5;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.lab-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Body: Sidebar + Main ────────────────────────────────────── */
+
+.lab-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Left Sidebar ────────────────────────────────────────────── */
+
+.lab-sidebar {
+    width: 230px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(14, 18, 32, 0.98);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+/* Tool navigation */
+.lab-tool-nav {
+    padding: 16px 12px 8px;
+    flex-shrink: 0;
+}
+
+.lab-nav-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4A5070;
+    padding: 0 4px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.lab-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #7B8299;
+    font-size: 0.84rem;
+    font-weight: 500;
+    transition: all 0.18s;
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.lab-nav-item:hover {
+    color: #C8CEDE;
+    background: rgba(37, 99, 235, 0.07);
+    border-color: rgba(37, 99, 235, 0.12);
+}
+
+.lab-nav-item.active {
+    color: #93C5FD;
+    background: rgba(37, 99, 235, 0.14);
+    border-color: rgba(37, 99, 235, 0.25);
+    font-weight: 600;
+}
+
+.lab-nav-item.active .lab-nav-icon {
+    color: #60A5FA;
+}
+
+.lab-nav-icon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.lab-nav-badge {
+    margin-left: auto;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 1px 6px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+}
+
+.lab-nav-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.05);
+    margin: 10px 4px;
+}
+
+/* ── Bench Panel ─────────────────────────────────────────────── */
+
+.lab-bench-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(10, 13, 24, 0.6);
+}
+
+.lab-bench-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 12px 8px;
+    flex-shrink: 0;
+}
+
+.lab-bench-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #F59E0B;
+}
+
+.lab-bench-title-icon {
+    font-size: 0.85rem;
+}
+
+.lab-bench-count {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4A5070;
+    margin-left: 2px;
+}
+
+.lab-bench-clear-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: #4A5070;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 3px 7px;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.lab-bench-clear-btn:hover {
+    color: #EF4444;
+    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.lab-bench-clear-btn svg {
+    width: 11px;
+    height: 11px;
+}
+
+/* Empty bench state */
+.lab-bench-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    text-align: center;
+    gap: 8px;
+}
+
+.lab-bench-empty-icon {
+    font-size: 1.8rem;
+    opacity: 0.3;
+}
+
+.lab-bench-empty-text {
+    font-size: 0.75rem;
+    color: #3A4060;
+    line-height: 1.5;
+}
+
+/* Paper tiles on bench */
+.lab-bench-papers {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+
+.lab-bench-papers::-webkit-scrollbar {
+    width: 4px;
+}
+
+.lab-bench-papers::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+}
+
+.lab-bench-tile {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 8px 9px;
+    border-radius: 8px;
+    background: rgba(37, 99, 235, 0.06);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    cursor: grab;
+    transition: all 0.18s;
+    position: relative;
+}
+
+.lab-bench-tile:hover {
+    background: rgba(37, 99, 235, 0.11);
+    border-color: rgba(37, 99, 235, 0.22);
+}
+
+.lab-bench-tile:active {
+    cursor: grabbing;
+}
+
+.lab-bench-tile.dragging {
+    opacity: 0.5;
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.lab-bench-tile-drag {
+    color: #2A3050;
+    font-size: 0.8rem;
+    padding-top: 1px;
+    flex-shrink: 0;
+    cursor: grab;
+}
+
+.lab-bench-tile-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.lab-bench-tile-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #B0B8D0;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.lab-bench-tile-meta {
+    font-size: 0.63rem;
+    color: #4A5070;
+    margin-top: 3px;
+}
+
+.lab-bench-tile-remove {
+    background: none;
+    border: none;
+    color: #3A4060;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    transition: color 0.15s;
+    line-height: 1;
+}
+
+.lab-bench-tile-remove:hover {
+    color: #EF4444;
+}
+
+/* Add papers button */
+.lab-bench-add-btn {
+    margin: 0 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px dashed rgba(37, 99, 235, 0.22);
+    background: transparent;
+    color: #3D5080;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    flex-shrink: 0;
+}
+
+.lab-bench-add-btn:hover {
+    color: #7BAAF7;
+    border-color: rgba(37, 99, 235, 0.45);
+    background: rgba(37, 99, 235, 0.06);
+}
+
+/* ── Main Content Area ───────────────────────────────────────── */
+
+.lab-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+
+.lab-main::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lab-main::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+}
+
+/* ── Add Papers Modal ────────────────────────────────────────── */
+
+.lab-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 7, 15, 0.80);
+    backdrop-filter: blur(6px);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.lab-modal {
+    background: #111520;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    animation: slideUp 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+.lab-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+}
+
+.lab-modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #E8EBF5;
+}
+
+.lab-modal-subtitle {
+    font-size: 0.75rem;
+    color: #4A5070;
+    margin-top: 2px;
+}
+
+.lab-modal-close {
+    background: none;
+    border: none;
+    color: #4A5070;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s;
+}
+
+.lab-modal-close:hover { color: #D4D8E8; }
+
+.lab-modal-search {
+    padding: 12px 22px;
+    flex-shrink: 0;
+}
+
+.lab-modal-search input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 0.84rem;
+    color: #D4D8E8;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.lab-modal-search input:focus {
+    border-color: rgba(37, 99, 235, 0.5);
+}
+
+.lab-modal-search input::placeholder {
+    color: #3A4060;
+}
+
+.lab-modal-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+
+.lab-modal-list::-webkit-scrollbar { width: 4px; }
+.lab-modal-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+.lab-modal-paper-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.lab-modal-paper-row:hover {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: rgba(37, 99, 235, 0.12);
+}
+
+.lab-modal-paper-row.on-bench {
+    border-color: rgba(245, 158, 11, 0.18);
+    background: rgba(245, 158, 11, 0.04);
+}
+
+.lab-modal-paper-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    color: #F59E0B;
+    transition: all 0.15s;
+}
+
+.lab-modal-paper-row.on-bench .lab-modal-paper-check {
+    border-color: #F59E0B;
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.lab-modal-paper-info { flex: 1; min-width: 0; }
+
+.lab-modal-paper-title {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #B0B8D0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lab-modal-paper-meta {
+    font-size: 0.68rem;
+    color: #4A5070;
+    margin-top: 2px;
+}
+
+.lab-modal-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    gap: 8px;
+    color: #3A4060;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.lab-modal-empty-icon { font-size: 2rem; opacity: 0.4; }
+
+/* ── Tool Shell (shared) ─────────────────────────────────────── */
+
+.lab-tool-shell {
+    padding: 32px 36px;
+    min-height: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.lab-tool-header {
+    margin-bottom: 28px;
+}
+
+.lab-tool-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #F59E0B;
+    margin-bottom: 6px;
+}
+
+.lab-tool-title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #E8EBF5;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin: 0 0 8px;
+}
+
+.lab-tool-desc {
+    font-size: 0.88rem;
+    color: #5A6280;
+    line-height: 1.6;
+    max-width: 580px;
+}
+
+/* Bench-required notice when bench is empty */
+.lab-needs-bench {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 14px;
+    padding: 60px 24px;
+    border: 1px dashed rgba(37, 99, 235, 0.2);
+    border-radius: 16px;
+    background: rgba(37, 99, 235, 0.03);
+    margin-top: 20px;
+}
+
+.lab-needs-bench-icon {
+    font-size: 2.5rem;
+    opacity: 0.3;
+}
+
+.lab-needs-bench-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3D4870;
+}
+
+.lab-needs-bench-text {
+    font-size: 0.82rem;
+    color: #2A3050;
+    max-width: 360px;
+    line-height: 1.6;
+}
+
+/* Placeholder output area */
+.lab-tool-output-placeholder {
+    margin-top: 24px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #2A3050;
+    padding: 40px;
+    text-align: center;
+}
+
+.lab-tool-output-placeholder-icon {
+    font-size: 2.5rem;
+    opacity: 0.25;
+}
+
+.lab-tool-output-placeholder-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2A3050;
+}
+
+.lab-tool-output-placeholder-text {
+    font-size: 0.78rem;
+    color: #222840;
+    max-width: 340px;
+    line-height: 1.6;
+}
+
+/* Run button */
+.lab-run-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 24px;
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    font-family: inherit;
+}
+
+.lab-run-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(37, 99, 235, 0.4);
+}
+
+.lab-run-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.lab-run-btn-icon { font-size: 1rem; }
+
+/* Per-tool limit note */
+.lab-tool-limit-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: #4A5070;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin-left: 12px;
+}
+
+.lab-tool-limit-note strong { color: #F59E0B; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lab-sidebar { width: 0; display: none; }
+    .lab-tool-shell { padding: 20px 16px; }
+}
