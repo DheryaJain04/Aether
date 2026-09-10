@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PaperCard from "../components/PaperCard";
 import RankingToolbar from "../components/RankingToolbar";
-import { searchPapers } from "../services/api";
+import { searchPapers, uploadPaper } from "../services/api";
 import { RANKING_MODES, rankPapersByWeights } from "../utils/scoring";
 import AetherBrand from "../components/AetherBrand";
 import SavedPapersLink from "../components/SavedPapersLink";
@@ -27,6 +27,31 @@ function SearchResults() {
     const [newQuery, setNewQuery] = useState(query);
     const [stepIndex, setStepIndex] = useState(0);
     const [, setSaveVersion] = useState(0);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState("");
+    const fileInputRef = useRef(null);
+
+    async function handleFileUpload(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+            setUploadError("Please upload a valid PDF document.");
+            return;
+        }
+
+        setUploadError("");
+        setUploading(true);
+
+        try {
+            const res = await uploadPaper(file);
+            if (res.paperId) {
+                navigate(`/paper/${res.paperId}`);
+            }
+        } catch (err) {
+            setUploadError(err.message || "Failed to process PDF.");
+            setUploading(false);
+        }
+    }
 
     // Multi-factor ranking mode & custom weights state
     const [activeMode, setActiveMode] = useState("balanced");
@@ -139,15 +164,40 @@ function SearchResults() {
             </header>
 
             <form className="results-search" onSubmit={submitSearch}>
+                <div className="results-search-input-wrapper">
+                    <span className="results-search-icon" aria-hidden="true">🔍</span>
+                    <input
+                        type="text"
+                        value={newQuery}
+                        onChange={(e) => setNewQuery(e.target.value)}
+                        placeholder="Search topics, exact titles in quotes, DOIs (10.1145/...), or arXiv links..."
+                        required
+                    />
+                </div>
+                <button type="submit" className="results-search-submit">Search</button>
+                <button
+                    type="button"
+                    className="results-upload-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    title="Upload your own research paper PDF"
+                >
+                    {uploading ? "Analyzing..." : "✦ Upload PDF"}
+                </button>
                 <input
-                    type="text"
-                    value={newQuery}
-                    onChange={(e) => setNewQuery(e.target.value)}
-                    placeholder="Search research papers, algorithms, authors..."
-                    required
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".pdf,application/pdf"
+                    style={{ display: "none" }}
                 />
-                <button type="submit">Search</button>
             </form>
+
+            {uploadError && (
+                <div className="results-upload-error">
+                    ⚠️ {uploadError}
+                </div>
+            )}
 
             <section className="results-header">
                 <h1>Results for "{query}"</h1>

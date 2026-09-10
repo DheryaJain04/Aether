@@ -91,6 +91,16 @@ const paperSchema =
             topics:{
                 type:[String],
                 default:[]
+            },
+
+            fullText:{
+                type:String,
+                default:null
+            },
+
+            isCustom:{
+                type:Boolean,
+                default:false
             }
         },
         {

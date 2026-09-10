@@ -172,7 +172,55 @@ ${abstract}
     }
 }
 
+// Extract structured metadata from raw paper text header
+async function extractPaperMetadata(textSnippet) {
+    const prompt = `
+You are Aether, an academic research metadata extractor.
+Extract the metadata from the following beginning text of a research paper.
+
+Return ONLY a valid JSON object matching exactly this schema, without markdown formatting, code fences, or additional text:
+{
+  "title": "Full Paper Title",
+  "authors": ["Author One", "Author Two"],
+  "abstract": "The full abstract or first introductory summary",
+  "publicationYear": 2024,
+  "journal": "Conference or Journal Name"
+}
+
+Paper Text:
+${textSnippet}
+`;
+
+    // Primary: Groq JSON mode for high speed
+    try {
+        const completion = await groq.chat.completions.create({
+            model: "openai/gpt-oss-120b",
+            messages: [{ role: "user", content: prompt }]
+        });
+        const content = completion.choices[0].message.content.trim();
+        const cleaned = content.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(cleaned);
+    } catch (groqErr) {
+        console.warn("Groq metadata extraction failed, falling back to Gemini:", groqErr.message);
+    }
+
+    // Fallback 1: Gemini
+    try {
+        const response = await gemini.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt
+        });
+        const cleaned = response.text.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(cleaned);
+    } catch (geminiErr) {
+        console.warn("Gemini metadata extraction failed:", geminiErr.message);
+    }
+
+    return null;
+}
+
 module.exports = {
     getSummary,
-    getKeywords
+    getKeywords,
+    extractPaperMetadata
 };

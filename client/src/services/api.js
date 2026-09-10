@@ -44,6 +44,23 @@ export function askPaper(id, question){
     });
 }
 
+export async function uploadPaper(file){
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/papers/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok){
+        throw new Error(data.error || "Failed to upload and parse research paper.");
+    }
+    return data;
+}
+
 // Authentication Endpoints
 export function signupUser(data){
     return request(`${API_BASE_URL}/auth/signup`, {

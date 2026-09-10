@@ -23,9 +23,37 @@ function reconstructAbstract(invertedIndex){
     return words.join(" ");
 }
 
-// Normalizes OpenAlex data for the React client with database fallback
+const pdf = require("pdf-parse");
+
+// Normalizes OpenAlex data or custom uploaded paper for the React client
 async function getPaperData(req, res){
     const id = req.params.id;
+
+    // Check MongoDB directly if it's a custom paper or cached paper
+    if (id.startsWith("custom_")) {
+        try {
+            const cachedPaper = await Paper.findOne({ openAlexId: id });
+            if (cachedPaper) {
+                const authors = (cachedPaper.authors || []).map(a => a.name).slice(0, 3).join(" • ") || "Uploaded Researcher";
+                return res.json({
+                    paper: {
+                        id: cachedPaper.openAlexId,
+                        title: cachedPaper.title,
+                        authors: authors,
+                        journal: cachedPaper.journal || "Custom Uploaded Research",
+                        year: cachedPaper.publicationYear || new Date().getFullYear(),
+                        doi: cachedPaper.doi || null,
+                        openAccess: true,
+                        isCustom: true,
+                        abstract: cachedPaper.abstract || "Abstract unavailable.",
+                        citations: citationService.generateCitations(cachedPaper)
+                    }
+                });
+            }
+        } catch (dbErr) {
+            console.error("Custom paper lookup error:", dbErr.message);
+        }
+    }
 
     try{
         const response = await axios.get(
@@ -81,6 +109,69 @@ async function getPaperData(req, res){
         }
 
         return res.status(500).json({ error: "Unable to load this paper." });
+    }
+}
+
+// Upload custom PDF research paper
+async function uploadPaper(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "Please upload a PDF file." });
+        }
+
+        const data = await pdf(req.file.buffer);
+        const fullText = (data.text || "").trim();
+
+        if (!fullText || fullText.length < 50) {
+            return res.status(400).json({ error: "Could not extract text from the provided PDF. It might be scanned or image-only." });
+        }
+
+        const headerSnippet = fullText.slice(0, 3500);
+        let extractedMetadata = {
+            title: req.file.originalname.replace(/\.pdf$/i, "").replace(/[-_]/g, " "),
+            authors: ["Uploaded Researcher"],
+            abstract: fullText.slice(0, 500) + "...",
+            publicationYear: new Date().getFullYear(),
+            journal: "Custom Uploaded Research"
+        };
+
+        try {
+            const aiMetadata = await aiService.extractPaperMetadata(headerSnippet);
+            if (aiMetadata) {
+                if (aiMetadata.title) extractedMetadata.title = aiMetadata.title;
+                if (Array.isArray(aiMetadata.authors) && aiMetadata.authors.length) extractedMetadata.authors = aiMetadata.authors;
+                if (aiMetadata.abstract) extractedMetadata.abstract = aiMetadata.abstract;
+                if (aiMetadata.publicationYear) extractedMetadata.publicationYear = Number(aiMetadata.publicationYear) || new Date().getFullYear();
+                if (aiMetadata.journal) extractedMetadata.journal = aiMetadata.journal;
+            }
+        } catch (aiErr) {
+            console.warn("AI metadata extraction fallback used:", aiErr.message);
+        }
+
+        const customId = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+        const newPaper = await Paper.create({
+            openAlexId: customId,
+            title: extractedMetadata.title,
+            authors: extractedMetadata.authors.map(name => ({ name })),
+            abstract: extractedMetadata.abstract,
+            publicationYear: extractedMetadata.publicationYear,
+            journal: extractedMetadata.journal,
+            fullText: fullText,
+            isCustom: true,
+            openAccess: true,
+            publicationType: "Uploaded Document"
+        });
+
+        return res.json({
+            success: true,
+            paperId: customId,
+            title: newPaper.title,
+            redirectUrl: `/paper/${customId}`
+        });
+    } catch (err) {
+        console.error("PDF upload error:", err.message);
+        return res.status(500).json({ error: "Failed to process and upload research paper." });
     }
 }
 
@@ -246,6 +337,28 @@ async function chatWithPaper(req,res){
         console.log("CHAT REQUEST:", id);
         console.log("QUESTION:", question);
 
+        // Check if custom uploaded paper with stored fullText
+        if (id.startsWith("custom_")) {
+            const cachedCustom = await Paper.findOne({ openAlexId: id });
+            if (cachedCustom && cachedCustom.fullText) {
+                try {
+                    const paperData = {
+                        id: cachedCustom.openAlexId,
+                        title: cachedCustom.title
+                    };
+                    const vectorStore = await ragService.getPaperVectorStore(paperData, cachedCustom.fullText);
+                    const relevantDocuments = await ragService.retrieveRelevantChunks(vectorStore, question);
+                    const answer = await ragService.generateRAGAnswer(question, relevantDocuments);
+                    return res.json({
+                        answer,
+                        source: "full-paper"
+                    });
+                } catch (customRagErr) {
+                    console.error("Custom paper RAG error:", customRagErr.message);
+                }
+            }
+        }
+
         let paper = null;
         try {
             const url = `https://api.openalex.org/works/${id}`;
@@ -370,5 +483,6 @@ module.exports = {
     getPaperData,
     generateSummary,
     generateKeywords,
-    chatWithPaper
+    chatWithPaper,
+    uploadPaper
 };

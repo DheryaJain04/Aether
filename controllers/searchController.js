@@ -130,24 +130,117 @@ async function fetchFromCrossRef(query) {
     }
 }
 
+function extractDOI(input){
+    if(!input) return null;
+    const match = input.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)\b/i);
+    return match ? match[1].replace(/[.,;)]+$/, "") : null;
+}
+
+function extractArXivId(input){
+    if(!input) return null;
+    const urlMatch = input.match(/arxiv\.org\/(?:abs|pdf)\/([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)/i);
+    if(urlMatch) return urlMatch[1];
+    const prefixMatch = input.match(/\barXiv:([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)\b/i);
+    if(prefixMatch) return prefixMatch[1];
+    const rawMatch = input.trim().match(/^([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)$/);
+    if(rawMatch) return rawMatch[1];
+    return null;
+}
+
+function extractOpenAlexId(input){
+    if(!input) return null;
+    const match = input.trim().match(/^(?:https?:\/\/openalex\.org\/)?(W[0-9]+)$/i);
+    return match ? match[1].toUpperCase() : null;
+}
+
 async function getSearchResults(query){
     let rawPapers = [];
+    const trimmed = (query || "").trim();
 
-    // Tier 1: Try OpenAlex with Polite Pool identity
-    try {
-        const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&per-page=30&mailto=scholar@aether.ai`;
-        const response = await axios.get(url, {
-            headers: {
-                "User-Agent": "AetherAcademic/1.0 (mailto:scholar@aether.ai)"
-            },
-            timeout: 5000
-        });
+    const detectedDOI = extractDOI(trimmed);
+    const detectedArXiv = extractArXivId(trimmed);
+    const detectedOpenAlexId = extractOpenAlexId(trimmed);
 
-        rawPapers = response.data?.results || [];
-    } catch (openAlexErr) {
-        console.warn(`OpenAlex rate-limited or unavailable (${openAlexErr.message}). Engaging CrossRef academic fallback...`);
-        // Tier 2: CrossRef Fallback with guaranteed abstracts
-        rawPapers = await fetchFromCrossRef(query);
+    // Tier 0A: Direct DOI Resolution
+    if(detectedDOI){
+        try{
+            console.log(`[Smart Search] Direct DOI detected: ${detectedDOI}`);
+            const doiUrl = `https://api.openalex.org/works/https://doi.org/${encodeURIComponent(detectedDOI)}?mailto=scholar@aether.ai`;
+            const response = await axios.get(doiUrl, {
+                headers: { "User-Agent": "AetherAcademic/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 6000
+            });
+            if(response.data && response.data.id){
+                rawPapers = [response.data];
+            }
+        }catch(doiErr){
+            console.warn(`Direct DOI OpenAlex lookup failed (${doiErr.message}). Trying CrossRef...`);
+            rawPapers = await fetchFromCrossRef(detectedDOI);
+        }
+    }
+    // Tier 0B: Direct arXiv ID / Link Resolution
+    else if(detectedArXiv){
+        try{
+            console.log(`[Smart Search] Direct arXiv ID detected: ${detectedArXiv}`);
+            const arxivUrl = `https://api.openalex.org/works?filter=ids.arxiv:${encodeURIComponent(detectedArXiv)}&per-page=10&mailto=scholar@aether.ai`;
+            const response = await axios.get(arxivUrl, {
+                headers: { "User-Agent": "AetherAcademic/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 6000
+            });
+            rawPapers = response.data?.results || [];
+        }catch(arxivErr){
+            console.warn(`Direct arXiv lookup failed (${arxivErr.message}).`);
+        }
+    }
+    // Tier 0C: Direct OpenAlex ID Resolution
+    else if(detectedOpenAlexId){
+        try{
+            console.log(`[Smart Search] Direct OpenAlex ID detected: ${detectedOpenAlexId}`);
+            const workUrl = `https://api.openalex.org/works/${encodeURIComponent(detectedOpenAlexId)}?mailto=scholar@aether.ai`;
+            const response = await axios.get(workUrl, {
+                headers: { "User-Agent": "AetherAcademic/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 6000
+            });
+            if(response.data && response.data.id){
+                rawPapers = [response.data];
+            }
+        }catch(workErr){
+            console.warn(`Direct OpenAlex ID lookup failed (${workErr.message}).`);
+        }
+    }
+    // Tier 0D: Exact Quoted Title Search
+    else if(trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length > 5){
+        const cleanTitle = trimmed.slice(1, -1).trim();
+        try{
+            console.log(`[Smart Search] Quoted exact title search: "${cleanTitle}"`);
+            const titleUrl = `https://api.openalex.org/works?filter=title.search:${encodeURIComponent(cleanTitle)}&per-page=25&mailto=scholar@aether.ai`;
+            const response = await axios.get(titleUrl, {
+                headers: { "User-Agent": "AetherAcademic/1.0 (mailto:scholar@aether.ai)" },
+                timeout: 6000
+            });
+            rawPapers = response.data?.results || [];
+        }catch(titleErr){
+            console.warn(`Exact title lookup failed (${titleErr.message}).`);
+        }
+    }
+
+    // Tier 1: Standard Search (if no direct identifier or direct search returned 0)
+    if(!rawPapers || rawPapers.length === 0){
+        try {
+            const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&per-page=30&mailto=scholar@aether.ai`;
+            const response = await axios.get(url, {
+                headers: {
+                    "User-Agent": "AetherAcademic/1.0 (mailto:scholar@aether.ai)"
+                },
+                timeout: 5000
+            });
+
+            rawPapers = response.data?.results || [];
+        } catch (openAlexErr) {
+            console.warn(`OpenAlex rate-limited or unavailable (${openAlexErr.message}). Engaging CrossRef academic fallback...`);
+            // Tier 2: CrossRef Fallback with guaranteed abstracts
+            rawPapers = await fetchFromCrossRef(query);
+        }
     }
 
     // If both return 0, check cached papers in MongoDB

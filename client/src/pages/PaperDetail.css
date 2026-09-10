@@ -106,6 +106,12 @@
     padding: 24px;
 }
 
+.aether-message,
+.user-message {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .chat-form input {
     font-size: 15px;
     padding: 16px 20px;

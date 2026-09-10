@@ -67,13 +67,16 @@ async function createVectorStore(documents){
     );
 }
 
-// Create or retrieve cached vector store for a paper
-async function getPaperVectorStore(paperData){
+// Create or retrieve cached vector store for a paper (supports URL or direct text)
+async function getPaperVectorStore(paperData, directText = null){
     if(vectorStoreCache.has(paperData.id)){
         return vectorStoreCache.get(paperData.id);
     }
 
-    const text = await getPaperText(paperData.pdfUrl);
+    let text = directText;
+    if(!text && paperData.pdfUrl){
+        text = await getPaperText(paperData.pdfUrl);
+    }
 
     if(!text){
         throw new Error("Unable to extract paper text.");
@@ -105,6 +108,52 @@ async function retrieveRelevantChunks(vectorStore,question){
     return relevantDocuments;
 }
 
+// Clean raw LaTeX formatting into human-readable plain math
+function cleanMathNotation(text) {
+    if (!text || typeof text !== "string") return text;
+    return text
+        // Remove LaTeX math block/inline delimiters $$ or $
+        .replace(/\$\$([\s\S]*?)\$\$/g, "$1")
+        .replace(/\$([^\$\n]+)\$/g, "$1")
+        // Convert \frac{a}{b} to (a / b)
+        .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1 / $2)")
+        // Convert \sqrt{x} to sqrt($1)
+        .replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)")
+        // Convert \text{...}, \mathbf{...}, \mathit{...}, \mathrm{...}
+        .replace(/\\(?:text|mathbf|mathit|mathrm|bm|mathcal)\{([^{}]+)\}/g, "$1")
+        // Common LaTeX symbols to clean unicode / readable math
+        .replace(/\\times/g, "×")
+        .replace(/\\cdot/g, "*")
+        .replace(/\\pm/g, "±")
+        .replace(/\\leq/g, "<=")
+        .replace(/\\geq/g, ">=")
+        .replace(/\\neq/g, "!=")
+        .replace(/\\approx/g, "≈")
+        .replace(/\\sum(?:_\{([^}]+)\})?(?:\^\{([^}]+)\})?/g, "sum")
+        .replace(/\\prod(?:_\{([^}]+)\})?(?:\^\{([^}]+)\})?/g, "product")
+        .replace(/\\int/g, "integral")
+        .replace(/\\alpha/g, "α")
+        .replace(/\\beta/g, "β")
+        .replace(/\\gamma/g, "γ")
+        .replace(/\\theta/g, "θ")
+        .replace(/\\lambda/g, "λ")
+        .replace(/\\mu/g, "μ")
+        .replace(/\\sigma/g, "σ")
+        .replace(/\\pi/g, "π")
+        .replace(/\\Delta/g, "Δ")
+        .replace(/\\rightarrow/g, "→")
+        .replace(/\\leftarrow/g, "←")
+        .replace(/\\in/g, "∈")
+        .replace(/\\infty/g, "∞")
+        .replace(/\\left\(/g, "(")
+        .replace(/\\right\)/g, ")")
+        .replace(/\\left\[/g, "[")
+        .replace(/\\right\]/g, "]")
+        // Remove residual backslashes before plain words
+        .replace(/\\([a-zA-Z]+)/g, "$1")
+        .trim();
+}
+
 // Generate RAG answer using Groq + System Prompt
 async function generateRAGAnswer(question, relevantDocuments) {
     const context = relevantDocuments
@@ -128,16 +177,21 @@ Core Instructions:
    - If the user asks about assumptions, premises, or hypotheses, identify and explain the explicit assumptions or constraints made by the researchers in the paper text.
    - If the provided context does not mention any assumptions made by the authors, state clearly: "The provided context does not mention any explicit assumptions made by the authors."
 
-3. Ambiguous or Unclear Queries:
+3. Mathematical Formulas and Equations:
+   - When presenting formulas, equations, or mathematical metrics from the paper, do NOT output raw LaTeX markup (such as \\frac{}, \\sum_{}, \\begin{equation}, \\mathbf{}, or \\cdot).
+   - Instead, present formulas in clean, intuitive plain-text mathematical notation (for example: "Attention(Q, K, V) = softmax((Q * K^T) / sqrt(d_k)) * V" or "Loss = - sum(y_i * log(p_i))").
+   - Always briefly describe what the key terms/variables represent in plain English.
+
+4. Ambiguous or Unclear Queries:
    - If the user's question is too vague, ambiguous, or incomplete to answer meaningfully, do not guess or hallucinate.
    - Instead, politely ask a concise clarifying question and suggest 2-3 specific topics (e.g., methodology, datasets, findings, or limitations) they can ask about.
 
-4. Response Clarity:
+5. Response Clarity:
    - If the context only partially answers the question, explain what is available and note that the context provides partial details.
    - If the answer cannot be found in the context, state that the provided context does not contain enough information to answer.
    - Keep answers clear, concise, and academically accurate.
    - Do not mention context numbers unless necessary.
-   - Do not use Markdown formatting or asterisks.
+   - Do not use Markdown formatting or asterisks for bold text.
 
 CONTEXT:
 ${context}
@@ -156,7 +210,8 @@ ${question}
         ]
     });
 
-    return completion.choices[0].message.content.trim();
+    const rawAnswer = completion.choices[0].message.content.trim();
+    return cleanMathNotation(rawAnswer);
 }
 
 async function generateAbstractAnswer(
@@ -181,10 +236,13 @@ Core Instructions:
    - If the user asks about assumptions or hypotheses, accurately explain any assumptions mentioned by the authors in the abstract.
    - If the abstract does not state the researchers' assumptions, state clearly: "The provided abstract does not specify any explicit assumptions made by the authors."
 
-3. Ambiguous or Unclear Queries:
+3. Mathematical Formulas and Equations:
+   - Do NOT output raw LaTeX markup. Use clean, human-readable plain-text math notation (e.g., "E = m * c^2" or "Accuracy = (TP + TN) / Total").
+
+4. Ambiguous or Unclear Queries:
    - If the user's question is vague, ambiguous, or incomplete, ask a brief clarifying question rather than guessing.
 
-4. Response Clarity:
+5. Response Clarity:
    - If the abstract contains only partial information, clearly state that the answer is based on limited information from the abstract.
    - If the abstract does not contain the requested information, state that the available abstract does not provide enough information.
    - Keep answers clear, concise, and academically accurate.
@@ -211,11 +269,8 @@ ${question}
             ]
         });
 
-    return completion
-        .choices[0]
-        .message
-        .content
-        .trim();
+    const rawAnswer = completion.choices[0].message.content.trim();
+    return cleanMathNotation(rawAnswer);
 }
 
 module.exports = {
