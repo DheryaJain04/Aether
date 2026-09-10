@@ -106,9 +106,9 @@ async function retrieveRelevantChunks(vectorStore,question){
 }
 
 // Generate RAG answer using Groq + System Prompt
-async function generateRAGAnswer(question,relevantDocuments){
+async function generateRAGAnswer(question, relevantDocuments) {
     const context = relevantDocuments
-        .map((document,index)=>{
+        .map((document, index) => {
             return `[Context ${index+1}]\n${document.pageContent}`;
         })
         .join("\n\n");
@@ -116,18 +116,28 @@ async function generateRAGAnswer(question,relevantDocuments){
     const prompt = `
 You are Aether, an AI research assistant answering questions about a specific research paper.
 
-Answer the user's question using ONLY the provided context from the research paper.
+Answer the user's question using the provided context from the research paper.
 
-Rules:
-- Base your answer strictly on the provided context.
-- Do not use outside knowledge.
-- Do not invent or assume information that is not present.
-- If the context only partially answers the question, clearly state that the available context provides only partial information.
-- If the answer cannot be found in the context, say that the provided context does not contain enough information to answer.
-- Give a clear, concise, academically accurate answer.
-- Do not mention context numbers unless necessary.
-- Do not use Markdown formatting.
-- Do not use asterisks for bold text.
+Core Instructions:
+1. Strict Context Grounding:
+   - Base your answer strictly on the provided context.
+   - As an AI assistant, you must NOT make ungrounded assumptions, speculate, or introduce outside knowledge.
+
+2. Handling "Assumptions" and Hypotheses (Crucial):
+   - Distinguish between YOU (the AI) making assumptions vs. THE AUTHORS/RESEARCHERS stating assumptions.
+   - If the user asks about assumptions, premises, or hypotheses, identify and explain the explicit assumptions or constraints made by the researchers in the paper text.
+   - If the provided context does not mention any assumptions made by the authors, state clearly: "The provided context does not mention any explicit assumptions made by the authors."
+
+3. Ambiguous or Unclear Queries:
+   - If the user's question is too vague, ambiguous, or incomplete to answer meaningfully, do not guess or hallucinate.
+   - Instead, politely ask a concise clarifying question and suggest 2-3 specific topics (e.g., methodology, datasets, findings, or limitations) they can ask about.
+
+4. Response Clarity:
+   - If the context only partially answers the question, explain what is available and note that the context provides partial details.
+   - If the answer cannot be found in the context, state that the provided context does not contain enough information to answer.
+   - Keep answers clear, concise, and academically accurate.
+   - Do not mention context numbers unless necessary.
+   - Do not use Markdown formatting or asterisks.
 
 CONTEXT:
 ${context}
@@ -138,10 +148,10 @@ ${question}
 
     const completion = await groq.chat.completions.create({
         model: "openai/gpt-oss-120b",
-        messages:[
+        messages: [
             {
-                role:"user",
-                content:prompt
+                role: "user",
+                content: prompt
             }
         ]
     });
@@ -153,25 +163,32 @@ async function generateAbstractAnswer(
     question,
     title,
     abstract
-){
+) {
     const prompt = `
 You are Aether, an AI research assistant.
 
-The full text of this research paper is not currently accessible.
-You have access only to the paper's title and abstract.
+The full text of this research paper is not currently accessible. You have access only to the paper's title and abstract.
 
 Answer the user's question using ONLY the information contained in the title and abstract below.
 
-Rules:
-- Do not use outside knowledge.
-- Do not invent information.
-- Do not claim to have access to the full paper.
-- If the abstract clearly contains the answer, answer normally.
-- If the abstract contains only partial information, clearly state that the answer is based on limited information from the abstract.
-- If the abstract does not contain the requested information, clearly say that the available abstract does not provide enough information to answer the question.
-- Keep the answer clear, concise, and academically accurate.
-- Do not use Markdown formatting.
-- Do not use asterisks for bold text.
+Core Instructions:
+1. Strict Grounding:
+   - Base your answer strictly on the provided title and abstract.
+   - Do not use outside knowledge or make ungrounded AI assumptions.
+   - Do not claim to have access to the full paper.
+
+2. Handling "Assumptions" (Crucial):
+   - If the user asks about assumptions or hypotheses, accurately explain any assumptions mentioned by the authors in the abstract.
+   - If the abstract does not state the researchers' assumptions, state clearly: "The provided abstract does not specify any explicit assumptions made by the authors."
+
+3. Ambiguous or Unclear Queries:
+   - If the user's question is vague, ambiguous, or incomplete, ask a brief clarifying question rather than guessing.
+
+4. Response Clarity:
+   - If the abstract contains only partial information, clearly state that the answer is based on limited information from the abstract.
+   - If the abstract does not contain the requested information, state that the available abstract does not provide enough information.
+   - Keep answers clear, concise, and academically accurate.
+   - Do not use Markdown formatting or asterisks.
 
 TITLE:
 ${title}
@@ -185,11 +202,11 @@ ${question}
 
     const completion =
         await groq.chat.completions.create({
-            model:"openai/gpt-oss-120b",
-            messages:[
+            model: "openai/gpt-oss-120b",
+            messages: [
                 {
-                    role:"user",
-                    content:prompt
+                    role: "user",
+                    content: prompt
                 }
             ]
         });
