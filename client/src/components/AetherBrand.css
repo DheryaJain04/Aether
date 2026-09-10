@@ -29,6 +29,7 @@
     letter-spacing: 0.14em;
     background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 50%, #0284C7 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
     line-height: 1;
@@ -61,6 +62,7 @@
 .theme-dark .aether-word-text {
     background: linear-gradient(135deg, #FFFFFF 0%, #E0F2FE 45%, #60A5FA 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 4px 16px rgba(56, 189, 248, 0.35));
 }
