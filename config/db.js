@@ -1,14 +1,22 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
 
 async function connectDB(){
+    // Set reliable public DNS servers to resolve MongoDB Atlas SRV records smoothly on Windows/ISP networks
+    try {
+        dns.setServers(["8.8.8.8", "1.1.1.1"]);
+    } catch {
+        // Ignore if restricted in certain runtime environments
+    }
+
     const primaryUri = process.env.MONGODB_URI;
     const localUri = "mongodb://127.0.0.1:27017/aether";
 
     try {
         if (primaryUri) {
-            // Attempt remote connection with a 3-second timeout
+            // Attempt remote connection with a 10-second timeout
             await mongoose.connect(primaryUri, {
-                serverSelectionTimeoutMS: 3000
+                serverSelectionTimeoutMS: 10000
             });
             console.log("MongoDB connected successfully (Remote Atlas Cluster)");
             return;
@@ -20,7 +28,7 @@ async function connectDB(){
     // Fallback to local MongoDB instance
     try {
         await mongoose.connect(localUri, {
-            serverSelectionTimeoutMS: 3000
+            serverSelectionTimeoutMS: 5000
         });
         console.log("MongoDB connected successfully (Local Instance: mongodb://127.0.0.1:27017/aether)");
     } catch (localErr) {

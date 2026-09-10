@@ -64,14 +64,25 @@
 
 .lab-header-title {
     font-family: "Outfit", "Inter", sans-serif;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
     color: #FFFFFF;
     letter-spacing: -0.02em;
     margin: 0;
     line-height: 1;
     display: inline-flex;
-    align-items: center;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.lab-header-tagline {
+    font-family: "Inter", sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: #93C5FD;
+    letter-spacing: normal;
+    opacity: 0.9;
 }
 
 .lab-header-right {

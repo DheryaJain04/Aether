@@ -249,7 +249,9 @@ export default function ScholarLab() {
                 <div className="lab-header-left">
                     <AetherBrand size="md" variant="horizontal" />
                     <div className="lab-header-divider" aria-hidden="true"></div>
-                    <h1 className="lab-header-title">Scholar Lab</h1>
+                    <h1 className="lab-header-title">
+                        Scholar Lab <span className="lab-header-tagline">: a cross-paper intelligence studio</span>
+                    </h1>
                 </div>
                 <div className="lab-header-right">
                     <Link to="/saved" className="lab-header-library-btn" aria-label="Open Scholar Library">
