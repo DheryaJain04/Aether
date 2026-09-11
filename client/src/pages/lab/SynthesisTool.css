@@ -1,20 +1,377 @@
-.synthesis-action-bar {
+/* SynthesisTool.css */
+
+.synthesis-results-container {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
+    flex-direction: column;
+    gap: 28px;
+    margin-top: 24px;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.synthesis-papers-used {
-    font-size: 0.84rem;
-    color: #5A6280;
+.synthesis-header-block {
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.25), rgba(15, 23, 42, 0.6));
+    border: 1px solid rgba(147, 197, 253, 0.22);
+    border-radius: 16px;
+}
+
+.synthesis-eyebrow {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #38BDF8;
+    margin-bottom: 6px;
+}
+
+.synthesis-main-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0 0 14px;
+    line-height: 1.3;
+}
+
+.synthesis-papers-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pills-label {
+    font-size: 0.82rem;
+    color: #94A3B8;
+    font-weight: 600;
+}
+
+.corpus-paper-pill {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(37, 99, 235, 0.18);
+    border: 1px solid rgba(96, 165, 250, 0.28);
+    color: #93C5FD;
+    max-width: 240px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Sections */
+.synthesis-section {
+    padding: 24px;
+    background: rgba(15, 25, 45, 0.65);
+    border: 1px solid rgba(147, 197, 253, 0.14);
+    border-radius: 16px;
+}
+
+.synthesis-section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #F1F5F9;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sec-icon {
+    font-size: 1.15rem;
+}
+
+.synthesis-executive-text {
+    font-size: 0.96rem;
+    line-height: 1.75;
+    color: #CBD5E1;
+    white-space: pre-line;
+}
+
+/* Themes Grid */
+.synthesis-themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.synthesis-theme-card {
+    padding: 18px 20px;
+    background: rgba(30, 58, 138, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.theme-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.theme-number {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #38BDF8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.theme-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.theme-desc {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #A0B2C9;
+    margin: 0;
+}
+
+.theme-methodology {
+    font-size: 0.82rem;
+    color: #93C5FD;
+    background: rgba(37, 99, 235, 0.15);
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.theme-papers-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.theme-papers-label {
+    font-size: 0.75rem;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.citation-pill {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(14, 116, 144, 0.25);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38BDF8;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Convergence */
+.synthesis-convergence-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.convergence-card {
+    padding: 16px 20px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.convergence-title {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #34D399;
+}
+
+.convergence-evidence {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #CBD5E1;
+    margin: 0;
+}
+
+.convergence-papers {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
 }
 
-.synthesis-papers-used strong {
+.papers-label {
+    font-size: 0.76rem;
+    color: #64748B;
+}
+
+/* Contradictions */
+.synthesis-contradictions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contradiction-card {
+    padding: 20px;
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.contradiction-dispute {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #F87171;
+}
+
+.contradiction-viewpoints-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.viewpoint-box {
+    padding: 14px 16px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.viewpoint-a {
+    background: rgba(30, 58, 138, 0.25);
+    border: 1px solid rgba(96, 165, 250, 0.25);
+}
+
+.viewpoint-b {
+    background: rgba(14, 116, 144, 0.25);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.viewpoint-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
     color: #93C5FD;
+}
+
+.viewpoint-paper {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.viewpoint-stance {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #CBD5E1;
+    font-style: italic;
+    margin: 0;
+}
+
+.contradiction-reason {
+    font-size: 0.86rem;
+    color: #FCA5A5;
+    background: rgba(239, 68, 68, 0.12);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+/* Trajectory */
+.trajectory-section {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(15, 23, 42, 0.6));
+    border-color: rgba(96, 165, 250, 0.3);
+}
+
+.trajectory-content {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: #E2E8F0;
+    white-space: pre-line;
+}
+
+/* Agent Loading Card */
+.lab-agent-loading-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    padding: 54px 24px;
+    border-radius: 16px;
+    background: rgba(30, 58, 138, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    margin-top: 24px;
+}
+
+.lab-agent-spinner {
+    font-size: 2.4rem;
+    color: #38BDF8;
+    animation: spin 1s linear infinite;
+}
+
+.lab-agent-loading-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.lab-agent-progress-text {
+    font-size: 0.94rem;
+    color: #93C5FD;
+    max-width: 480px;
+    line-height: 1.5;
+}
+
+.lab-agent-pipeline-steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.step-pill {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(147, 197, 253, 0.2);
+    color: #64748B;
+}
+
+.step-pill.active {
+    background: rgba(37, 99, 235, 0.25);
+    border-color: #38BDF8;
+    color: #38BDF8;
+}
+
+.step-arrow {
+    color: #64748B;
+    font-size: 0.8rem;
+}
+
+.lab-tool-error-banner {
+    margin-top: 18px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #F87171;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }

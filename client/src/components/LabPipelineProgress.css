@@ -1,0 +1,353 @@
+/* LabPipelineProgress.css */
+
+.pipeline-flowchart-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 30px 26px;
+    background: radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.28) 0%, rgba(15, 25, 45, 0.85) 100%);
+    border: 1px solid rgba(147, 197, 253, 0.25);
+    border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 0 32px rgba(37, 99, 235, 0.15);
+    margin-top: 24px;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Header */
+.flowchart-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.flowchart-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #38BDF8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 6px 14px;
+    border-radius: 999px;
+}
+
+.live-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38BDF8;
+    box-shadow: 0 0 10px #38BDF8;
+    animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+.flowchart-active-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.flowchart-active-step-tag {
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38BDF8;
+}
+
+.flowchart-active-subtitle {
+    font-size: 0.92rem;
+    color: #93C5FD;
+    max-width: 620px;
+    line-height: 1.5;
+}
+
+/* Flowchart Track */
+.flowchart-track {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 4px 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(147, 197, 253, 0.2) transparent;
+}
+
+.flowchart-node-wrapper {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 170px;
+}
+
+/* Flowchart Node Card */
+.flowchart-node {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 14px;
+    border-radius: 14px;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(147, 197, 253, 0.15);
+    overflow: hidden;
+}
+
+/* 1. Completed State */
+.flowchart-node.step-completed {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.45);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);
+}
+
+.flowchart-node.step-completed .node-step-circle {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: #34D399;
+    color: #34D399;
+}
+
+.flowchart-node.step-completed .node-agent-name {
+    color: #34D399;
+}
+
+.flowchart-node.step-completed .node-status-badge {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.flowchart-node.step-completed .node-title {
+    color: #FFFFFF;
+}
+
+/* 2. Active State (Pulsing Glow) */
+.flowchart-node.step-active {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(14, 116, 144, 0.3));
+    border-color: #38BDF8;
+    box-shadow: 0 0 28px rgba(56, 189, 248, 0.4), 0 4px 16px rgba(37, 99, 235, 0.3);
+    transform: translateY(-3px) scale(1.02);
+}
+
+.flowchart-node.step-active .node-step-circle {
+    background: #0284C7;
+    border-color: #38BDF8;
+    color: #FFFFFF;
+    font-weight: 800;
+}
+
+.flowchart-node.step-active .node-agent-name {
+    color: #38BDF8;
+    font-weight: 800;
+}
+
+.flowchart-node.step-active .node-status-badge {
+    background: rgba(56, 189, 248, 0.25);
+    color: #38BDF8;
+    border: 1px solid rgba(56, 189, 248, 0.6);
+    font-weight: 700;
+}
+
+.flowchart-node.step-active .node-title {
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+.flowchart-node.step-active .node-desc {
+    color: #E2E8F0;
+}
+
+.flowchart-node.step-active .node-glow-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    border: 2px solid #38BDF8;
+    animation: glowRingPulse 1.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes glowRingPulse {
+    0%, 100% { opacity: 0.8; box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.3); }
+    50% { opacity: 0.2; box-shadow: inset 0 0 4px rgba(56, 189, 248, 0.1); }
+}
+
+/* 3. Pending State */
+.flowchart-node.step-pending {
+    opacity: 0.45;
+    background: rgba(15, 23, 42, 0.3);
+    border-color: rgba(147, 197, 253, 0.08);
+}
+
+.flowchart-node.step-pending .node-step-circle {
+    border-color: rgba(147, 197, 253, 0.2);
+    color: #64748B;
+}
+
+.flowchart-node.step-pending .node-agent-name {
+    color: #64748B;
+}
+
+.flowchart-node.step-pending .node-status-badge {
+    background: rgba(100, 116, 139, 0.15);
+    color: #64748B;
+}
+
+.flowchart-node.step-pending .node-title {
+    color: #94A3B8;
+}
+
+/* Node Elements */
+.node-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.node-step-circle {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(147, 197, 253, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #94A3B8;
+    font-family: inherit;
+}
+
+.node-status-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.node-active-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #38BDF8;
+    box-shadow: 0 0 8px #38BDF8;
+    animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+.node-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.node-agent-name {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94A3B8;
+}
+
+.node-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.node-desc {
+    font-size: 0.74rem;
+    line-height: 1.4;
+    color: #94A3B8;
+}
+
+/* Connecting Beams */
+.flowchart-connector {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.connector-line {
+    width: 24px;
+    height: 2px;
+    background: rgba(147, 197, 253, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.connector-arrow {
+    font-size: 1rem;
+    color: #64748B;
+    margin-left: -2px;
+}
+
+/* Passed / Completed Connector */
+.flowchart-connector.connector-passed .connector-line {
+    background: #10B981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.flowchart-connector.connector-passed .connector-arrow {
+    color: #34D399;
+    font-weight: 800;
+}
+
+/* Active Beam Connector (Moving Light Pulse) */
+.flowchart-connector.connector-active .connector-line {
+    background: rgba(56, 189, 248, 0.3);
+}
+
+.flowchart-connector.connector-active .connector-beam {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, #38BDF8, #FFFFFF);
+    animation: beamFlow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes beamFlow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.flowchart-connector.connector-active .connector-arrow {
+    color: #38BDF8;
+    font-weight: 800;
+}
+
+@media (max-width: 900px) {
+    .flowchart-track {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .flowchart-node-wrapper {
+        flex-direction: column;
+        width: 100%;
+    }
+    .flowchart-connector {
+        transform: rotate(90deg);
+        margin: 6px auto;
+    }
+}

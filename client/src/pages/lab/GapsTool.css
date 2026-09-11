@@ -1,16 +1,148 @@
-﻿.tool-action-bar {
+/* GapsTool.css */
+
+.gaps-results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    margin-top: 24px;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gaps-hero-section {
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(30, 58, 138, 0.25));
+    border-color: rgba(234, 179, 8, 0.35);
+}
+
+.gaps-questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.question-card {
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.question-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #FBBF24;
+    letter-spacing: 0.06em;
+}
+
+.question-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.question-rationale {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: #CBD5E1;
+    margin: 0;
+}
+
+.question-method {
+    font-size: 0.82rem;
+    color: #93C5FD;
+    background: rgba(37, 99, 235, 0.15);
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* Gap Detail Cards */
+.gaps-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.gap-detail-card {
+    padding: 18px 22px;
+    background: rgba(30, 58, 138, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gap-card-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
+    gap: 10px;
 }
-.tool-papers-used {
+
+.gap-type-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.gap-type-tag.methodological {
+    background: rgba(56, 189, 248, 0.2);
+    color: #38BDF8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.gap-type-tag.data {
+    background: rgba(168, 85, 247, 0.2);
+    color: #C084FC;
+    border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.gap-type-tag.theoretical {
+    background: rgba(244, 63, 94, 0.2);
+    color: #FB7185;
+    border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.gap-card-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.gap-explanation {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #CBD5E1;
+    margin: 0;
+}
+
+.gap-proposed-approach {
     font-size: 0.84rem;
-    color: #5A6280;
+    color: #34D399;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.gap-papers-row {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
+    margin-top: 4px;
 }
-.tool-papers-used strong { color: #93C5FD; }
+
+.gap-papers-label {
+    font-size: 0.76rem;
+    color: #64748B;
+    font-weight: 600;
+}
