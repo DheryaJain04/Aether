@@ -1,72 +1,78 @@
-// Scholar Lab Controller
-// Stub handlers — AI logic for each tool will be implemented per phase.
-// Each endpoint receives { papers: [...], options: {} } in the request body.
+// controllers/labController.js
+// Scholar Lab Controller — Connects HTTP endpoints to the 5-Layer Multi-Agent Lab Pipeline
 
-const TOOL_LIMITS = {
-    synthesize: 5,
-    compare: 4,
-    matrix: 6,
-    gaps: 5
-};
+const { runLabToolPipeline, TOOL_LIMITS } = require("../services/lab/labPipeline");
 
-function synthesize(req, res) {
-    const { papers = [] } = req.body;
-    const limit = TOOL_LIMITS.synthesize;
-    if (!papers.length) {
-        return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+async function synthesize(req, res) {
+    try {
+        const { papers = [], options = {} } = req.body;
+        if (!papers.length) {
+            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+        }
+        if (papers.length < 2) {
+            return res.status(400).json({ error: "Literature synthesis requires at least 2 papers." });
+        }
+
+        const result = await runLabToolPipeline("synthesis", papers, options);
+        res.json(result);
+    } catch (err) {
+        console.error("Scholar Lab [Synthesis] Error:", err.message);
+        res.status(500).json({ error: err.message || "Failed to execute literature synthesis pipeline." });
     }
-    res.json({
-        status: "coming_soon",
-        tool: "synthesis",
-        papersReceived: papers.length,
-        papersLimit: limit,
-        message: "Literature Synthesis is under construction. The AI engine will be wired in the next phase."
-    });
 }
 
-function compare(req, res) {
-    const { papers = [] } = req.body;
-    const limit = TOOL_LIMITS.compare;
-    if (papers.length < 2) {
-        return res.status(400).json({ error: "Comparison requires at least 2 papers." });
+async function compare(req, res) {
+    try {
+        const { papers = [], options = {} } = req.body;
+        if (!papers.length) {
+            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+        }
+        if (papers.length < 2) {
+            return res.status(400).json({ error: "Paper comparison requires at least 2 papers." });
+        }
+
+        const result = await runLabToolPipeline("compare", papers, options);
+        res.json(result);
+    } catch (err) {
+        console.error("Scholar Lab [Compare] Error:", err.message);
+        res.status(500).json({ error: err.message || "Failed to execute paper comparison pipeline." });
     }
-    res.json({
-        status: "coming_soon",
-        tool: "compare",
-        papersReceived: papers.length,
-        papersLimit: limit,
-        message: "Paper Comparison is under construction. The AI engine will be wired in the next phase."
-    });
 }
 
-function matrix(req, res) {
-    const { papers = [] } = req.body;
-    const limit = TOOL_LIMITS.matrix;
-    if (!papers.length) {
-        return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+async function matrix(req, res) {
+    try {
+        const { papers = [], options = {} } = req.body;
+        if (!papers.length) {
+            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+        }
+        if (papers.length < 2) {
+            return res.status(400).json({ error: "Evidence matrix requires at least 2 papers." });
+        }
+
+        const result = await runLabToolPipeline("matrix", papers, options);
+        res.json(result);
+    } catch (err) {
+        console.error("Scholar Lab [Matrix] Error:", err.message);
+        res.status(500).json({ error: err.message || "Failed to execute evidence matrix pipeline." });
     }
-    res.json({
-        status: "coming_soon",
-        tool: "matrix",
-        papersReceived: papers.length,
-        papersLimit: limit,
-        message: "Evidence Matrix is under construction. The AI engine will be wired in the next phase."
-    });
 }
 
-function gaps(req, res) {
-    const { papers = [] } = req.body;
-    const limit = TOOL_LIMITS.gaps;
-    if (!papers.length) {
-        return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+async function gaps(req, res) {
+    try {
+        const { papers = [], options = {} } = req.body;
+        if (!papers.length) {
+            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
+        }
+        if (papers.length < 2) {
+            return res.status(400).json({ error: "Gap detection requires at least 2 papers." });
+        }
+
+        const result = await runLabToolPipeline("gaps", papers, options);
+        res.json(result);
+    } catch (err) {
+        console.error("Scholar Lab [Gaps] Error:", err.message);
+        res.status(500).json({ error: err.message || "Failed to execute research gap detector pipeline." });
     }
-    res.json({
-        status: "coming_soon",
-        tool: "gaps",
-        papersReceived: papers.length,
-        papersLimit: limit,
-        message: "Research Gap Detector is under construction. The AI engine will be wired in the next phase."
-    });
 }
 
 module.exports = {

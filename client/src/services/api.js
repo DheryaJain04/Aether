@@ -85,3 +85,32 @@ export function logoutUser(){
 export function getCurrentUser(){
     return request(`${API_BASE_URL}/auth/me`);
 }
+
+// Scholar Lab Multi-Agent Cognitive Tools
+export function runSynthesis(papers, options = {}) {
+    return request(`${API_BASE_URL}/lab/synthesize`, {
+        method: "POST",
+        body: JSON.stringify({ papers, options })
+    });
+}
+
+export function runCompare(papers, options = {}) {
+    return request(`${API_BASE_URL}/lab/compare`, {
+        method: "POST",
+        body: JSON.stringify({ papers, options })
+    });
+}
+
+export function runMatrix(papers, options = {}) {
+    return request(`${API_BASE_URL}/lab/matrix`, {
+        method: "POST",
+        body: JSON.stringify({ papers, options })
+    });
+}
+
+export function runGaps(papers, options = {}) {
+    return request(`${API_BASE_URL}/lab/gaps`, {
+        method: "POST",
+        body: JSON.stringify({ papers, options })
+    });
+}
