@@ -11,14 +11,14 @@ export const TOOL_LIMITS = {
 // Bench hard cap — max papers a user can hold on the workbench at once
 export const BENCH_CAP = 5;
 
-const STORAGE_KEY = "aether_lab_bench";
+const RESULTS_STORAGE_KEY = "aether_lab_tool_results";
 
-function loadBenchFromStorage() {
+function loadResultsFromStorage() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        const raw = sessionStorage.getItem(RESULTS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
     } catch {
-        return [];
+        return {};
     }
 }
 
@@ -26,6 +26,7 @@ const LabContext = createContext(null);
 
 export function LabProvider({ children }) {
     const [bench, setBench] = useState(loadBenchFromStorage);
+    const [toolResults, setToolResults] = useState(loadResultsFromStorage);
 
     // Persist bench to localStorage whenever it changes
     useEffect(() => {
@@ -35,6 +36,15 @@ export function LabProvider({ children }) {
             // Storage quota exceeded — fail silently
         }
     }, [bench]);
+
+    // Persist toolResults to sessionStorage whenever they change
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(toolResults));
+        } catch {
+            // Storage quota exceeded — fail silently
+        }
+    }, [toolResults]);
 
     const addToBench = useCallback((paper) => {
         setBench(current => {
@@ -50,14 +60,48 @@ export function LabProvider({ children }) {
 
     const clearBench = useCallback(() => {
         setBench([]);
+        setToolResults({});
+        try {
+            sessionStorage.removeItem(RESULTS_STORAGE_KEY);
+        } catch {}
     }, []);
 
     const isOnBench = useCallback((paperId) => {
         return bench.some(p => p.id === paperId);
     }, [bench]);
 
+    const getToolResult = useCallback((toolId) => {
+        return toolResults[toolId] || null;
+    }, [toolResults]);
+
+    const setToolResult = useCallback((toolId, data) => {
+        setToolResults(prev => ({
+            ...prev,
+            [toolId]: data
+        }));
+    }, []);
+
+    const clearToolResults = useCallback(() => {
+        setToolResults({});
+        try {
+            sessionStorage.removeItem(RESULTS_STORAGE_KEY);
+        } catch {}
+    }, []);
+
     return (
-        <LabContext.Provider value={{ bench, addToBench, removeFromBench, clearBench, isOnBench, BENCH_CAP, TOOL_LIMITS }}>
+        <LabContext.Provider value={{
+            bench,
+            addToBench,
+            removeFromBench,
+            clearBench,
+            isOnBench,
+            BENCH_CAP,
+            TOOL_LIMITS,
+            toolResults,
+            getToolResult,
+            setToolResult,
+            clearToolResults
+        }}>
             {children}
         </LabContext.Provider>
     );

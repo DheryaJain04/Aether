@@ -15,12 +15,12 @@ const STANCE_CONFIG = {
 };
 
 export default function MatrixTool() {
-    const { bench } = useLab();
+    const { bench, getToolResult, setToolResult } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
-    const [result, setResult] = useState(null);
+    const result = getToolResult("matrix");
     const [selectedStance, setSelectedStance] = useState(null); // { claim, paper, stanceObj }
 
     const hasPapers = bench.length > 0;
@@ -39,7 +39,7 @@ export default function MatrixTool() {
 
         try {
             const data = await runMatrix(bench.slice(0, TOOL_LIMIT));
-            setResult(data.data);
+            setToolResult("matrix", data.data);
         } catch (err) {
             setError(err.message || "Failed to generate evidence matrix.");
         } finally {

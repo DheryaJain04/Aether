@@ -17,12 +17,12 @@ const DIMENSIONS = [
 ];
 
 export default function CompareTool() {
-    const { bench } = useLab();
+    const { bench, getToolResult, setToolResult } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
-    const [result, setResult] = useState(null);
+    const result = getToolResult("compare");
     const [viewMode, setViewMode] = useState("matrix"); // "matrix" (table) | "cards"
     const [showBibtexModal, setShowBibtexModal] = useState(false);
     const [selectedBibtexPaper, setSelectedBibtexPaper] = useState(null);
@@ -45,7 +45,7 @@ export default function CompareTool() {
 
         try {
             const data = await runCompare(bench.slice(0, TOOL_LIMIT));
-            setResult(data.data);
+            setToolResult("compare", data.data);
         } catch (err) {
             setError(err.message || "Failed to execute paper comparison.");
         } finally {

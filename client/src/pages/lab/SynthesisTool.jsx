@@ -8,12 +8,12 @@ import "./SynthesisTool.css";
 const TOOL_LIMIT = 5;
 
 export default function SynthesisTool() {
-    const { bench } = useLab();
+    const { bench, getToolResult, setToolResult } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
-    const [result, setResult] = useState(null);
+    const result = getToolResult("synthesis");
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
@@ -31,7 +31,7 @@ export default function SynthesisTool() {
 
         try {
             const data = await runSynthesis(bench.slice(0, TOOL_LIMIT));
-            setResult(data.data);
+            setToolResult("synthesis", data.data);
         } catch (err) {
             setError(err.message || "Failed to complete literature synthesis.");
         } finally {
