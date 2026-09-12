@@ -33,7 +33,7 @@ export default function SynthesisTool() {
         try {
             const stagedPapers = bench.slice(0, TOOL_LIMIT);
             const data = await runSynthesis(stagedPapers);
-            setToolResult("synthesis", data.data, stagedPapers.map(p => p.id));
+            setToolResult("synthesis", { ...data.data, evaluatedPapers: stagedPapers }, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to complete literature synthesis.");
         } finally {
@@ -51,6 +51,8 @@ export default function SynthesisTool() {
         const found = bench.find(p => String(p.id) === String(paperId));
         return found ? found.title : paperId;
     }
+
+    const evaluatedPapers = result?.evaluatedPapers || bench.slice(0, TOOL_LIMIT);
 
     return (
         <div className="lab-tool-shell">
@@ -129,7 +131,7 @@ export default function SynthesisTool() {
                         <h2 className="synthesis-main-title">{result.title || "Cross-Paper Literature Synthesis"}</h2>
                         <div className="synthesis-papers-pills">
                             <span className="pills-label">Corpus Analyzed:</span>
-                            {bench.slice(0, TOOL_LIMIT).map(p => (
+                            {evaluatedPapers.map(p => (
                                 <span key={p.id} className="corpus-paper-pill" title={p.title}>
                                     {p.title} ({p.year || "N/A"})
                                 </span>

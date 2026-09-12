@@ -41,7 +41,7 @@ export default function MatrixTool() {
         try {
             const stagedPapers = bench.slice(0, TOOL_LIMIT);
             const data = await runMatrix(stagedPapers);
-            setToolResult("matrix", data.data, stagedPapers.map(p => p.id));
+            setToolResult("matrix", { ...data.data, evaluatedPapers: stagedPapers }, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to generate evidence matrix.");
         } finally {
@@ -57,6 +57,8 @@ export default function MatrixTool() {
     function getPaper(paperId) {
         return bench.find(p => String(p.id) === String(paperId)) || { id: paperId, title: paperId };
     }
+
+    const evaluatedPapers = result?.evaluatedPapers || bench.slice(0, TOOL_LIMIT);
 
     return (
         <div className="lab-tool-shell">
@@ -151,7 +153,7 @@ export default function MatrixTool() {
                             <thead>
                                 <tr>
                                     <th className="claim-col-header">Central Empirical Claims</th>
-                                    {bench.slice(0, TOOL_LIMIT).map((p, idx) => (
+                                    {evaluatedPapers.map((p, idx) => (
                                         <th key={p.id} className="matrix-paper-header" title={p.title}>
                                             <div className="p-header-badge">Paper 0{idx + 1}</div>
                                             <div className="p-header-title">{p.title}</div>
@@ -166,7 +168,7 @@ export default function MatrixTool() {
                                             <span className="claim-domain-badge">{claim.domain || "Hypothesis"}</span>
                                             <div className="claim-text">{claim.claimText}</div>
                                         </td>
-                                        {bench.slice(0, TOOL_LIMIT).map(p => {
+                                        {evaluatedPapers.map(p => {
                                             const stanceItem = claim.stances?.find(s => String(s.paperId) === String(p.id)) || {
                                                 stance: "silent",
                                                 confidence: "low",

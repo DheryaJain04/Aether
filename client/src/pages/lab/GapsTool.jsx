@@ -33,7 +33,7 @@ export default function GapsTool() {
         try {
             const stagedPapers = bench.slice(0, TOOL_LIMIT);
             const data = await runGaps(stagedPapers);
-            setToolResult("gaps", data.data, stagedPapers.map(p => p.id));
+            setToolResult("gaps", { ...data.data, evaluatedPapers: stagedPapers }, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to detect research gaps.");
         } finally {
