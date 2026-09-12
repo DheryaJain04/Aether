@@ -58,16 +58,6 @@ export default function CompareTool() {
         }
     }
 
-    function scrollTable(direction) {
-        if (tableScrollRef.current) {
-            const scrollAmount = 380;
-            tableScrollRef.current.scrollBy({
-                left: direction === "left" ? -scrollAmount : scrollAmount,
-                behavior: "smooth"
-            });
-        }
-    }
-
     function generateBibtex(paper) {
         const citeKey = (paper.authors?.split(" ")[0] || "Author") + (paper.year || "2025") + (paper.title?.slice(0, 10).replace(/[^a-zA-Z]/g, "") || "paper");
         return `@article{${citeKey.toLowerCase()},\n  title={${paper.title}},\n  author={${paper.authors || "Unknown"}},\n  year={${paper.year || "2025"}},\n  journal={${paper.journal || "Research Document"}}\n}`;
@@ -212,19 +202,6 @@ export default function CompareTool() {
                                 <span>🗂️</span> Profile Cards
                             </button>
                         </div>
-
-                        {/* Scroll Navigation Controls for > 3 papers */}
-                        {result.paperProfiles?.length > 3 && viewMode === "matrix" && (
-                            <div className="compare-scroll-controls">
-                                <span className="scroll-hint-label">Slide Papers:</span>
-                                <button className="table-scroll-btn" onClick={() => scrollTable("left")} title="Scroll Left">
-                                    ‹
-                                </button>
-                                <button className="table-scroll-btn" onClick={() => scrollTable("right")} title="Scroll Right">
-                                    ›
-                                </button>
-                            </div>
-                        )}
 
                         {/* Academic Export Actions */}
                         <div className="compare-export-actions">
