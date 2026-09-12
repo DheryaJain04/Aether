@@ -11,7 +11,17 @@ export const TOOL_LIMITS = {
 // Bench hard cap — max papers a user can hold on the workbench at once
 export const BENCH_CAP = 5;
 
+const STORAGE_KEY = "aether_lab_bench";
 const RESULTS_STORAGE_KEY = "aether_lab_tool_results";
+
+function loadBenchFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
 
 function loadResultsFromStorage() {
     try {
