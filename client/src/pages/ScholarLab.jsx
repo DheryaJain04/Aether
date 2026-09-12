@@ -22,7 +22,7 @@ const TOOLS = [
         icon: "⊞",
         label: "Paper Comparison",
         path: "/lab/compare",
-        limit: 4,
+        limit: 5,
         desc: "Side-by-side structured comparison"
     },
     {
@@ -30,7 +30,7 @@ const TOOLS = [
         icon: "≡",
         label: "Evidence Matrix",
         path: "/lab/matrix",
-        limit: 6,
+        limit: 5,
         desc: "Claims × papers evidence grid"
     },
     {

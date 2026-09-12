@@ -5,7 +5,7 @@ import { runMatrix } from "../../services/api";
 import LabPipelineProgress from "../../components/LabPipelineProgress";
 import "./MatrixTool.css";
 
-const TOOL_LIMIT = 6;
+const TOOL_LIMIT = 5;
 
 const STANCE_CONFIG = {
     supports: { label: "Supports", icon: "✓", badgeClass: "stance-supports" },

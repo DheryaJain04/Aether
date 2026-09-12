@@ -8,8 +8,8 @@ const { validateAndFormatOutput } = require("./groundingValidator");
 
 const TOOL_LIMITS = {
     synthesis: 5,
-    compare: 4,
-    matrix: 6,
+    compare: 5,
+    matrix: 5,
     gaps: 5
 };
 

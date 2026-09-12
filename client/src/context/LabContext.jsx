@@ -3,13 +3,13 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 // Per-tool operational limits (how many papers each tool will actually process)
 export const TOOL_LIMITS = {
     synthesis: 5,
-    compare:   4,
-    matrix:    6,
+    compare:   5,
+    matrix:    5,
     gaps:      5
 };
 
 // Bench hard cap — max papers a user can hold on the workbench at once
-export const BENCH_CAP = 10;
+export const BENCH_CAP = 5;
 
 const STORAGE_KEY = "aether_lab_bench";
 

@@ -5,7 +5,7 @@ import { runCompare } from "../../services/api";
 import LabPipelineProgress from "../../components/LabPipelineProgress";
 import "./CompareTool.css";
 
-const TOOL_LIMIT = 4;
+const TOOL_LIMIT = 5;
 
 const DIMENSIONS = [
     { key: "problemStatement", label: "Problem Statement", icon: "🎯" },
@@ -141,7 +141,7 @@ export default function CompareTool() {
                     <div className="lab-tool-eyebrow">Scholar Lab · Multi-Agent Cognitive Tool 02</div>
                     <h1 className="lab-tool-title">⊞ Paper Comparison</h1>
                     <p className="lab-tool-desc">
-                        A structured side-by-side dimensional evaluation across 2–4 research papers analyzing problem formulations,
+                        A structured side-by-side dimensional evaluation across 2–5 research papers analyzing problem formulations,
                         architectures, benchmark datasets, quantitative metrics, limitations, and operational trade-offs.
                     </p>
                 </div>
