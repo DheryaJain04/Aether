@@ -66,6 +66,7 @@ For each paper, summarize its attributes across these 6 standard dimensions:
 Also identify for each paper:
 - "keyAdvantage": 1 concise sentence highlighting its standout strength or unique advantage.
 - "primaryContribution": 1 concise sentence summarizing its main theoretical or empirical breakthrough.
+- "idealUseCase": 1 concise sentence describing the optimal research or engineering scenario where this method should be preferred.
 
 Then provide an overall Comparative Summary and a deep Trade-Off Analysis weighing the advantages and disadvantages of each approach.
 
@@ -85,6 +86,7 @@ Return ONLY a JSON object matching this schema:
       "title": "string",
       "keyAdvantage": "string",
       "primaryContribution": "string",
+      "idealUseCase": "string",
       "values": {
         "problemStatement": "string",
         "methodology": "string",

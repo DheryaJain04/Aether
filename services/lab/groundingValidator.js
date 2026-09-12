@@ -112,6 +112,7 @@ async function validateAndFormatOutput(tool, rawArbitration = {}, originalPapers
                 year: p.year,
                 keyAdvantage: found.keyAdvantage || "High domain specificity and empirical methodology.",
                 primaryContribution: found.primaryContribution || `Core contributions formulated in ${p.title}.`,
+                idealUseCase: found.idealUseCase || "Optimal for research domains aligned with this methodology.",
                 values: {
                     problemStatement: vals.problemStatement || vals["Problem Statement"] || `Problem addressed in ${p.title}`,
                     methodology: vals.methodology || vals["Core Architecture / Methodology"] || "Methodology detailed in paper text.",

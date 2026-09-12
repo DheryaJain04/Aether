@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useOutletContext, Link } from "react-router-dom";
 import { useLab } from "../../context/LabContext";
 import { runCompare } from "../../services/api";
@@ -13,7 +13,7 @@ const DIMENSIONS = [
     { key: "dataset", label: "Dataset & Experimental Setup", icon: "📊" },
     { key: "results", label: "Key Results & Metrics", icon: "📈" },
     { key: "limitations", label: "Limitations & Constraints", icon: "⚠️" },
-    { key: "tradeOffs", label: "Trade-offs", icon: "⚖️" }
+    { key: "tradeOffs", label: "Trade-offs & Feasibility", icon: "⚖️" }
 ];
 
 export default function CompareTool() {
@@ -23,9 +23,11 @@ export default function CompareTool() {
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
     const [result, setResult] = useState(null);
-    const [activeDimension, setActiveDimension] = useState("all"); // "all" or specific key
     const [viewMode, setViewMode] = useState("matrix"); // "matrix" (table) | "cards"
-    const [copied, setCopied] = useState(false);
+    const [showBibtexModal, setShowBibtexModal] = useState(false);
+    const [selectedBibtexPaper, setSelectedBibtexPaper] = useState(null);
+
+    const tableScrollRef = useRef(null);
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
@@ -56,23 +58,39 @@ export default function CompareTool() {
         }
     }
 
+    function scrollTable(direction) {
+        if (tableScrollRef.current) {
+            const scrollAmount = 380;
+            tableScrollRef.current.scrollBy({
+                left: direction === "left" ? -scrollAmount : scrollAmount,
+                behavior: "smooth"
+            });
+        }
+    }
+
+    function generateBibtex(paper) {
+        const citeKey = (paper.authors?.split(" ")[0] || "Author") + (paper.year || "2025") + (paper.title?.slice(0, 10).replace(/[^a-zA-Z]/g, "") || "paper");
+        return `@article{${citeKey.toLowerCase()},\n  title={${paper.title}},\n  author={${paper.authors || "Unknown"}},\n  year={${paper.year || "2025"}},\n  journal={${paper.journal || "Research Document"}}\n}`;
+    }
+
     function generateMarkdownReport() {
         if (!result || !result.paperProfiles) return "";
 
         let md = `# Aether Scholar Lab · Cross-Paper Dimensional Comparison\n\n`;
         md += `*Generated: ${new Date().toLocaleDateString()} | Total Papers Compared: ${result.paperProfiles.length}*\n\n`;
         
-        md += `## 1. Staged Papers Overview\n\n`;
+        md += `## 1. Staged Research Corpus Overview\n\n`;
         result.paperProfiles.forEach((p, idx) => {
             md += `### [Paper ${idx + 1}] ${p.title}\n`;
             md += `- **Authors / Year**: ${[p.authors, p.year].filter(Boolean).join(" · ")}\n`;
             if (p.keyAdvantage) md += `- **Standout Advantage**: ${p.keyAdvantage}\n`;
             if (p.primaryContribution) md += `- **Primary Contribution**: ${p.primaryContribution}\n`;
+            if (p.idealUseCase) md += `- **Optimal Use Case**: ${p.idealUseCase}\n`;
             md += `\n`;
         });
 
         md += `## 2. Side-by-Side Dimensional Matrix\n\n`;
-        const headers = ["Dimension", ...result.paperProfiles.map((p, idx) => `Paper ${idx + 1}: ${p.title.slice(0, 30)}...`)];
+        const headers = ["Dimension", ...result.paperProfiles.map((p, idx) => `Paper ${idx + 1}: ${p.title.slice(0, 32)}...`)];
         md += `| ${headers.join(" | ")} |\n`;
         md += `| ${headers.map(() => "---").join(" | ")} |\n`;
 
@@ -89,20 +107,17 @@ export default function CompareTool() {
         }
 
         if (result.tradeOffAnalysis) {
-            md += `## 4. Cross-Paper Trade-Off Analysis\n\n${result.tradeOffAnalysis}\n\n`;
+            md += `## 4. Cross-Paper Trade-Off & Practical Feasibility Analysis\n\n${result.tradeOffAnalysis}\n\n`;
         }
+
+        md += `## 5. BibTeX Citations\n\n\`\`\`bibtex\n`;
+        result.paperProfiles.forEach(p => {
+            md += `${generateBibtex(p)}\n\n`;
+        });
+        md += `\`\`\`\n\n`;
 
         md += `---\n*Report compiled via Aether 5-Layer Multi-Agent Cognitive Engine*\n`;
         return md;
-    }
-
-    function handleCopyReport() {
-        const md = generateMarkdownReport();
-        if (!md) return;
-        navigator.clipboard.writeText(md).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2400);
-        });
     }
 
     function handleDownloadMarkdown() {
@@ -112,7 +127,7 @@ export default function CompareTool() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `aether-comparison-${Date.now()}.md`;
+        a.download = `aether-paper-comparison-${Date.now()}.md`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -126,8 +141,8 @@ export default function CompareTool() {
                     <div className="lab-tool-eyebrow">Scholar Lab · Multi-Agent Cognitive Tool 02</div>
                     <h1 className="lab-tool-title">⊞ Paper Comparison</h1>
                     <p className="lab-tool-desc">
-                        A structured side-by-side dimensional evaluation across 2–4 papers analyzing problem formulations,
-                        core architectures, benchmark datasets, quantitative metrics, limitations, and operational trade-offs.
+                        A structured side-by-side dimensional evaluation across 2–4 research papers analyzing problem formulations,
+                        architectures, benchmark datasets, quantitative metrics, limitations, and operational trade-offs.
                     </p>
                 </div>
                 {hasPapers && (
@@ -198,72 +213,77 @@ export default function CompareTool() {
                             </button>
                         </div>
 
-                        {/* Export & Actions */}
+                        {/* Scroll Navigation Controls for > 3 papers */}
+                        {result.paperProfiles?.length > 3 && viewMode === "matrix" && (
+                            <div className="compare-scroll-controls">
+                                <span className="scroll-hint-label">Slide Papers:</span>
+                                <button className="table-scroll-btn" onClick={() => scrollTable("left")} title="Scroll Left">
+                                    ‹
+                                </button>
+                                <button className="table-scroll-btn" onClick={() => scrollTable("right")} title="Scroll Right">
+                                    ›
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Academic Export Actions */}
                         <div className="compare-export-actions">
-                            <button
-                                className="compare-export-btn"
-                                onClick={handleCopyReport}
-                                title="Copy comparison markdown to clipboard"
-                            >
-                                <span>{copied ? "✓" : "📋"}</span>
-                                {copied ? "Copied!" : "Copy Report"}
-                            </button>
                             <button
                                 className="compare-export-btn primary"
                                 onClick={handleDownloadMarkdown}
-                                title="Download complete markdown report"
+                                title="Download complete research markdown & BibTeX report"
                             >
                                 <span>📥</span>
-                                Export Markdown
+                                Export Research Report (.md)
                             </button>
                         </div>
                     </div>
 
-                    {/* Dimension Filter Tabs */}
-                    <div className="compare-filter-bar">
-                        <span className="filter-label">Filter Dimension:</span>
-                        <button
-                            className={`dim-filter-btn${activeDimension === "all" ? " active" : ""}`}
-                            onClick={() => setActiveDimension("all")}
-                        >
-                            <span>🌐</span> All Dimensions
-                        </button>
-                        {DIMENSIONS.map(dim => (
-                            <button
-                                key={dim.key}
-                                className={`dim-filter-btn${activeDimension === dim.key ? " active" : ""}`}
-                                onClick={() => setActiveDimension(dim.key)}
-                            >
-                                <span>{dim.icon}</span> {dim.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* VIEW MODE 1: Table Matrix View */}
+                    {/* VIEW MODE 1: Table Matrix View (Max 3 papers visible at once with smooth slide) */}
                     {viewMode === "matrix" && (
-                        <div className="compare-grid-wrapper">
+                        <div className="compare-grid-wrapper" ref={tableScrollRef}>
                             <table className="compare-table">
                                 <thead>
                                     <tr>
-                                        <th className="dim-col-header">Dimension</th>
+                                        <th className="dim-col-header">
+                                            <span className="dim-col-header-text">DIMENSION</span>
+                                        </th>
                                         {result.paperProfiles?.map((p, idx) => (
                                             <th key={p.paperId || idx} className="paper-col-header">
                                                 <div className="paper-header-badge-row">
                                                     <span className="paper-header-badge">Paper 0{idx + 1}</span>
-                                                    {p.paperId && !p.paperId.startsWith("custom_") && (
-                                                        <Link to={`/paper/${encodeURIComponent(p.paperId)}`} className="paper-link-pill" target="_blank" rel="noreferrer">
-                                                            View Paper ↗
-                                                        </Link>
-                                                    )}
+                                                    <div className="paper-action-links">
+                                                        <button
+                                                            className="paper-bibtex-btn"
+                                                            onClick={() => {
+                                                                setSelectedBibtexPaper(p);
+                                                                setShowBibtexModal(true);
+                                                            }}
+                                                            title="View BibTeX Citation"
+                                                        >
+                                                            BibTeX
+                                                        </button>
+                                                        {p.paperId && !p.paperId.startsWith("custom_") && (
+                                                            <Link to={`/paper/${encodeURIComponent(p.paperId)}`} className="paper-link-pill" target="_blank" rel="noreferrer">
+                                                                View ↗
+                                                            </Link>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="paper-header-title">{p.title}</div>
                                                 <div className="paper-header-meta">
                                                     {[p.authors, p.year].filter(Boolean).join(" · ")}
                                                 </div>
                                                 {p.keyAdvantage && (
-                                                    <div className="paper-advantage-badge" title="Key Standout Advantage">
+                                                    <div className="paper-advantage-badge" title="Standout Advantage">
                                                         <span className="adv-icon">⚡</span>
                                                         <span className="adv-text">{p.keyAdvantage}</span>
+                                                    </div>
+                                                )}
+                                                {p.idealUseCase && (
+                                                    <div className="paper-usecase-badge" title="Ideal Research Use Case">
+                                                        <span className="usecase-icon">🎯</span>
+                                                        <span className="usecase-text">{p.idealUseCase}</span>
                                                     </div>
                                                 )}
                                             </th>
@@ -271,12 +291,12 @@ export default function CompareTool() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {DIMENSIONS.filter(d => activeDimension === "all" || activeDimension === d.key).map(dim => (
+                                    {DIMENSIONS.map(dim => (
                                         <tr key={dim.key} className="compare-row">
                                             <td className="dim-cell">
                                                 <div className="dim-cell-content">
                                                     <span className="dim-icon">{dim.icon}</span>
-                                                    <span className="dim-name">{dim.label}</span>
+                                                    <strong className="dim-name">{dim.label}</strong>
                                                 </div>
                                             </td>
                                             {result.paperProfiles?.map((p, pIdx) => (
@@ -301,11 +321,23 @@ export default function CompareTool() {
                                     <div className="compare-card-header">
                                         <div className="card-badge-row">
                                             <span className="paper-card-badge">Paper 0{idx + 1}</span>
-                                            {p.paperId && !p.paperId.startsWith("custom_") && (
-                                                <Link to={`/paper/${encodeURIComponent(p.paperId)}`} className="paper-link-pill" target="_blank" rel="noreferrer">
-                                                    Inspect ↗
-                                                </Link>
-                                            )}
+                                            <div className="paper-action-links">
+                                                <button
+                                                    className="paper-bibtex-btn"
+                                                    onClick={() => {
+                                                        setSelectedBibtexPaper(p);
+                                                        setShowBibtexModal(true);
+                                                    }}
+                                                    title="View BibTeX Citation"
+                                                >
+                                                    BibTeX
+                                                </button>
+                                                {p.paperId && !p.paperId.startsWith("custom_") && (
+                                                    <Link to={`/paper/${encodeURIComponent(p.paperId)}`} className="paper-link-pill" target="_blank" rel="noreferrer">
+                                                        Inspect ↗
+                                                    </Link>
+                                                )}
+                                            </div>
                                         </div>
                                         <h3 className="compare-card-title">{p.title}</h3>
                                         <div className="compare-card-meta">
@@ -320,12 +352,19 @@ export default function CompareTool() {
                                         </div>
                                     )}
 
+                                    {p.idealUseCase && (
+                                        <div className="card-usecase-box">
+                                            <span className="usecase-title">🎯 Ideal Use Case</span>
+                                            <p className="usecase-desc">{p.idealUseCase}</p>
+                                        </div>
+                                    )}
+
                                     <div className="card-dimensions-list">
-                                        {DIMENSIONS.filter(d => activeDimension === "all" || activeDimension === d.key).map(dim => (
+                                        {DIMENSIONS.map(dim => (
                                             <div key={dim.key} className="card-dimension-item">
                                                 <div className="card-dim-label">
                                                     <span className="dim-icon">{dim.icon}</span>
-                                                    <span>{dim.label}</span>
+                                                    <strong className="dim-name-bold">{dim.label}</strong>
                                                 </div>
                                                 <div className="card-dim-value">
                                                     {p.values?.[dim.key] || "—"}
@@ -370,7 +409,36 @@ export default function CompareTool() {
                     </div>
                 </div>
             )}
+
+            {/* BibTeX Modal */}
+            {showBibtexModal && selectedBibtexPaper && (
+                <div className="lab-bibtex-modal-backdrop" onClick={() => setShowBibtexModal(false)}>
+                    <div className="lab-bibtex-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="bibtex-modal-header">
+                            <div className="bibtex-modal-title">
+                                <span>📜</span> BibTeX Reference · {selectedBibtexPaper.title.slice(0, 45)}...
+                            </div>
+                            <button className="bibtex-modal-close" onClick={() => setShowBibtexModal(false)}>✕</button>
+                        </div>
+                        <pre className="bibtex-code-block">
+                            {generateBibtex(selectedBibtexPaper)}
+                        </pre>
+                        <div className="bibtex-modal-actions">
+                            <button
+                                className="bibtex-copy-btn"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(generateBibtex(selectedBibtexPaper));
+                                    alert("BibTeX copied to clipboard!");
+                                }}
+                            >
+                                Copy BibTeX
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+
 
