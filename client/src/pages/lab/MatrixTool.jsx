@@ -15,12 +15,13 @@ const STANCE_CONFIG = {
 };
 
 export default function MatrixTool() {
-    const { bench, getToolResult, setToolResult } = useLab();
+    const { bench, getToolResult, setToolResult, isToolStale } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
     const result = getToolResult("matrix");
+    const stale = isToolStale("matrix");
     const [selectedStance, setSelectedStance] = useState(null); // { claim, paper, stanceObj }
 
     const hasPapers = bench.length > 0;
@@ -38,8 +39,9 @@ export default function MatrixTool() {
         const t4 = setTimeout(() => setActiveStep(5), 7800);
 
         try {
-            const data = await runMatrix(bench.slice(0, TOOL_LIMIT));
-            setToolResult("matrix", data.data);
+            const stagedPapers = bench.slice(0, TOOL_LIMIT);
+            const data = await runMatrix(stagedPapers);
+            setToolResult("matrix", data.data, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to generate evidence matrix.");
         } finally {
@@ -69,14 +71,20 @@ export default function MatrixTool() {
                 </div>
                 {hasPapers && (
                     <div className="lab-tool-header-action">
+                        {stale && (
+                            <div className="lab-bench-stale-pill" title="Bench papers changed since this matrix was generated">
+                                <span className="stale-dot"></span>
+                                Bench modified
+                            </div>
+                        )}
                         <button
-                            className="lab-run-btn"
+                            className={`lab-run-btn${stale ? " stale-highlight" : ""}`}
                             disabled={!canRun || loading}
                             onClick={handleRunMatrix}
-                            title={!canRun ? "Add at least 2 papers" : "Build Evidence Matrix"}
+                            title={!canRun ? "Add at least 2 papers" : stale ? "Re-run matrix with updated bench papers" : "Build Evidence Matrix"}
                         >
-                            <span className="lab-run-btn-icon">{loading ? "◌" : "≡"}</span>
-                            {loading ? "Evaluating..." : "Build Matrix"}
+                            <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "≡"}</span>
+                            {loading ? "Evaluating..." : stale ? "Re-run Matrix" : (result ? "Re-run Matrix" : "Build Matrix")}
                         </button>
                     </div>
                 )}

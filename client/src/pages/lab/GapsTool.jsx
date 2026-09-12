@@ -8,12 +8,13 @@ import "./GapsTool.css";
 const TOOL_LIMIT = 5;
 
 export default function GapsTool() {
-    const { bench, getToolResult, setToolResult } = useLab();
+    const { bench, getToolResult, setToolResult, isToolStale } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
     const result = getToolResult("gaps");
+    const stale = isToolStale("gaps");
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
@@ -30,8 +31,9 @@ export default function GapsTool() {
         const t4 = setTimeout(() => setActiveStep(5), 7800);
 
         try {
-            const data = await runGaps(bench.slice(0, TOOL_LIMIT));
-            setToolResult("gaps", data.data);
+            const stagedPapers = bench.slice(0, TOOL_LIMIT);
+            const data = await runGaps(stagedPapers);
+            setToolResult("gaps", data.data, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to detect research gaps.");
         } finally {
@@ -62,14 +64,20 @@ export default function GapsTool() {
                 </div>
                 {hasPapers && (
                     <div className="lab-tool-header-action">
+                        {stale && (
+                            <div className="lab-bench-stale-pill" title="Bench papers changed since these gaps were generated">
+                                <span className="stale-dot"></span>
+                                Bench modified
+                            </div>
+                        )}
                         <button
-                            className="lab-run-btn"
+                            className={`lab-run-btn${stale ? " stale-highlight" : ""}`}
                             disabled={!canRun || loading}
                             onClick={handleRunGaps}
-                            title={!canRun ? "Add at least 2 papers" : "Detect Research Gaps"}
+                            title={!canRun ? "Add at least 2 papers" : stale ? "Re-run detection with updated bench papers" : "Detect Research Gaps"}
                         >
-                            <span className="lab-run-btn-icon">{loading ? "◌" : "◎"}</span>
-                            {loading ? "Detecting Gaps..." : "Detect Gaps"}
+                            <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "◎"}</span>
+                            {loading ? "Detecting Gaps..." : stale ? "Re-run Detection" : (result ? "Re-run Detection" : "Detect Gaps")}
                         </button>
                     </div>
                 )}

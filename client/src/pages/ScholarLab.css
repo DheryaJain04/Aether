@@ -1003,6 +1003,42 @@
 .lab-tool-header-action {
     flex-shrink: 0;
     padding-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lab-bench-stale-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 20px;
+    color: #FCD34D;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.stale-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #F59E0B;
+    box-shadow: 0 0 8px #F59E0B;
+}
+
+.lab-run-btn.stale-highlight {
+    background: linear-gradient(135deg, #D97706, #B45309);
+    box-shadow: 0 4px 18px rgba(217, 119, 6, 0.4);
+}
+
+.lab-run-btn.stale-highlight:hover:not(:disabled) {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.5);
 }
 
 .lab-tool-eyebrow {

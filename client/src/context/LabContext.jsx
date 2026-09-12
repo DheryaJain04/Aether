@@ -81,15 +81,32 @@ export function LabProvider({ children }) {
     }, [bench]);
 
     const getToolResult = useCallback((toolId) => {
-        return toolResults[toolId] || null;
+        const entry = toolResults[toolId];
+        if (!entry) return null;
+        // Support both { data, paperIds } object and raw data
+        return entry.data !== undefined ? entry.data : entry;
     }, [toolResults]);
 
-    const setToolResult = useCallback((toolId, data) => {
+    const setToolResult = useCallback((toolId, data, paperIds = []) => {
         setToolResults(prev => ({
             ...prev,
-            [toolId]: data
+            [toolId]: {
+                data,
+                paperIds: Array.isArray(paperIds) ? paperIds.map(String) : []
+            }
         }));
     }, []);
+
+    const isToolStale = useCallback((toolId) => {
+        const entry = toolResults[toolId];
+        if (!entry || !entry.data || !Array.isArray(entry.paperIds) || entry.paperIds.length === 0) {
+            return false;
+        }
+        const currentBenchIds = bench.map(p => String(p.id));
+        const evaluatedIds = entry.paperIds.map(String);
+        if (currentBenchIds.length !== evaluatedIds.length) return true;
+        return !currentBenchIds.every(id => evaluatedIds.includes(id));
+    }, [toolResults, bench]);
 
     const clearToolResults = useCallback(() => {
         setToolResults({});
@@ -110,6 +127,7 @@ export function LabProvider({ children }) {
             toolResults,
             getToolResult,
             setToolResult,
+            isToolStale,
             clearToolResults
         }}>
             {children}

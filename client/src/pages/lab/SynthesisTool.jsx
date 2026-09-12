@@ -8,12 +8,13 @@ import "./SynthesisTool.css";
 const TOOL_LIMIT = 5;
 
 export default function SynthesisTool() {
-    const { bench, getToolResult, setToolResult } = useLab();
+    const { bench, getToolResult, setToolResult, isToolStale } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
     const result = getToolResult("synthesis");
+    const stale = isToolStale("synthesis");
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
@@ -30,8 +31,9 @@ export default function SynthesisTool() {
         const t4 = setTimeout(() => setActiveStep(5), 7800);
 
         try {
-            const data = await runSynthesis(bench.slice(0, TOOL_LIMIT));
-            setToolResult("synthesis", data.data);
+            const stagedPapers = bench.slice(0, TOOL_LIMIT);
+            const data = await runSynthesis(stagedPapers);
+            setToolResult("synthesis", data.data, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to complete literature synthesis.");
         } finally {
@@ -64,14 +66,20 @@ export default function SynthesisTool() {
                 </div>
                 {hasPapers && (
                     <div className="lab-tool-header-action">
+                        {stale && (
+                            <div className="lab-bench-stale-pill" title="Bench papers changed since this synthesis was generated">
+                                <span className="stale-dot"></span>
+                                Bench modified
+                            </div>
+                        )}
                         <button
-                            className="lab-run-btn"
+                            className={`lab-run-btn${stale ? " stale-highlight" : ""}`}
                             disabled={!canRun || loading}
                             onClick={handleRunSynthesis}
-                            title={!canRun ? "Add at least 2 papers to synthesize" : "Run Multi-Agent Synthesis"}
+                            title={!canRun ? "Add at least 2 papers to synthesize" : stale ? "Re-run synthesis with updated bench papers" : "Run Multi-Agent Synthesis"}
                         >
-                            <span className="lab-run-btn-icon">{loading ? "◌" : "✦"}</span>
-                            {loading ? "Synthesizing..." : "Run Synthesis"}
+                            <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "✦"}</span>
+                            {loading ? "Synthesizing..." : stale ? "Re-run Synthesis" : (result ? "Re-run Synthesis" : "Run Synthesis")}
                         </button>
                     </div>
                 )}

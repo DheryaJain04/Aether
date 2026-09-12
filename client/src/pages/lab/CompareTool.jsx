@@ -17,12 +17,13 @@ const DIMENSIONS = [
 ];
 
 export default function CompareTool() {
-    const { bench, getToolResult, setToolResult } = useLab();
+    const { bench, getToolResult, setToolResult, isToolStale } = useLab();
     const { setShowAddModal } = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
     const [error, setError] = useState("");
     const result = getToolResult("compare");
+    const stale = isToolStale("compare");
     const [viewMode, setViewMode] = useState("matrix"); // "matrix" (table) | "cards"
     const [showBibtexModal, setShowBibtexModal] = useState(false);
     const [selectedBibtexPaper, setSelectedBibtexPaper] = useState(null);
@@ -44,8 +45,9 @@ export default function CompareTool() {
         const t4 = setTimeout(() => setActiveStep(5), 7800);
 
         try {
-            const data = await runCompare(bench.slice(0, TOOL_LIMIT));
-            setToolResult("compare", data.data);
+            const stagedPapers = bench.slice(0, TOOL_LIMIT);
+            const data = await runCompare(stagedPapers);
+            setToolResult("compare", data.data, stagedPapers.map(p => p.id));
         } catch (err) {
             setError(err.message || "Failed to execute paper comparison.");
         } finally {
@@ -137,14 +139,20 @@ export default function CompareTool() {
                 </div>
                 {hasPapers && (
                     <div className="lab-tool-header-action">
+                        {stale && (
+                            <div className="lab-bench-stale-pill" title="Bench papers changed since this comparison was generated">
+                                <span className="stale-dot"></span>
+                                Bench modified
+                            </div>
+                        )}
                         <button
-                            className="lab-run-btn"
+                            className={`lab-run-btn${stale ? " stale-highlight" : ""}`}
                             disabled={!canRun || loading}
                             onClick={handleRunCompare}
-                            title={!canRun ? "Add at least 2 papers" : "Run Side-by-Side Comparison"}
+                            title={!canRun ? "Add at least 2 papers" : stale ? "Re-run comparison with updated bench papers" : "Run Side-by-Side Comparison"}
                         >
-                            <span className="lab-run-btn-icon">{loading ? "◌" : "⊞"}</span>
-                            {loading ? "Comparing..." : "Run Comparison"}
+                            <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "⊞"}</span>
+                            {loading ? "Comparing..." : stale ? "Re-run Comparison" : (result ? "Re-run Comparison" : "Run Comparison")}
                         </button>
                     </div>
                 )}
