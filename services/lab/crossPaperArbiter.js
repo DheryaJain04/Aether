@@ -63,6 +63,10 @@ For each paper, summarize its attributes across these 6 standard dimensions:
 - Limitations & Constraints
 - Trade-offs
 
+Also identify for each paper:
+- "keyAdvantage": 1 concise sentence highlighting its standout strength or unique advantage.
+- "primaryContribution": 1 concise sentence summarizing its main theoretical or empirical breakthrough.
+
 Then provide an overall Comparative Summary and a deep Trade-Off Analysis weighing the advantages and disadvantages of each approach.
 
 Return ONLY a JSON object matching this schema:
@@ -79,6 +83,8 @@ Return ONLY a JSON object matching this schema:
     {
       "paperId": "string (exact paperId)",
       "title": "string",
+      "keyAdvantage": "string",
+      "primaryContribution": "string",
       "values": {
         "problemStatement": "string",
         "methodology": "string",
