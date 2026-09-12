@@ -112,9 +112,15 @@ export default function GapsTool() {
                     {/* Novel Research Questions (Hero Section) */}
                     {result.novelResearchQuestions && result.novelResearchQuestions.length > 0 && (
                         <div className="synthesis-section gaps-hero-section">
-                            <h3 className="synthesis-section-title">
-                                High-Impact Novel Research Questions
-                            </h3>
+                            <div className="gap-section-header">
+                                <span className="gap-category-indicator questions"></span>
+                                <h3 className="synthesis-section-title questions-title">
+                                    High-Impact Novel Research Questions
+                                </h3>
+                                <span className="gap-count-badge questions-badge">
+                                    {result.novelResearchQuestions.length} Inquiries
+                                </span>
+                            </div>
                             <div className="gaps-questions-grid">
                                 {result.novelResearchQuestions.map((q, idx) => (
                                     <div key={idx} className="question-card">
@@ -134,17 +140,20 @@ export default function GapsTool() {
 
                     {/* Methodological Gaps */}
                     {result.methodologicalGaps && result.methodologicalGaps.length > 0 && (
-                        <div className="synthesis-section">
-                            <h3 className="synthesis-section-title">
-                                Methodological & Architectural Gaps
-                            </h3>
+                        <div className="synthesis-section gap-category-section methodological-section">
+                            <div className="gap-section-header">
+                                <span className="gap-category-indicator methodological"></span>
+                                <h3 className="synthesis-section-title methodological-title">
+                                    Methodological & Architectural Gaps
+                                </h3>
+                                <span className="gap-count-badge methodological-badge">
+                                    {result.methodologicalGaps.length} Gaps
+                                </span>
+                            </div>
                             <div className="gaps-cards-list">
                                 {result.methodologicalGaps.map((gap, idx) => (
-                                    <div key={idx} className="gap-detail-card">
-                                        <div className="gap-card-header">
-                                            <span className="gap-type-tag methodological">Methodological</span>
-                                            <h4 className="gap-card-title">{gap.gap}</h4>
-                                        </div>
+                                    <div key={idx} className="gap-detail-card methodological-card">
+                                        <h4 className="gap-card-title">{gap.gap}</h4>
                                         <p className="gap-explanation">{gap.explanation}</p>
                                         <div className="gap-proposed-approach">
                                             <strong>Proposed Solution / Approach:</strong> {gap.proposedApproach}
@@ -167,17 +176,20 @@ export default function GapsTool() {
 
                     {/* Data & Evaluation Gaps */}
                     {result.dataEvaluationGaps && result.dataEvaluationGaps.length > 0 && (
-                        <div className="synthesis-section">
-                            <h3 className="synthesis-section-title">
-                                Data, Benchmark & Evaluation Blindspots
-                            </h3>
+                        <div className="synthesis-section gap-category-section data-section">
+                            <div className="gap-section-header">
+                                <span className="gap-category-indicator data"></span>
+                                <h3 className="synthesis-section-title data-title">
+                                    Data, Benchmark & Evaluation Blindspots
+                                </h3>
+                                <span className="gap-count-badge data-badge">
+                                    {result.dataEvaluationGaps.length} Gaps
+                                </span>
+                            </div>
                             <div className="gaps-cards-list">
                                 {result.dataEvaluationGaps.map((gap, idx) => (
-                                    <div key={idx} className="gap-detail-card">
-                                        <div className="gap-card-header">
-                                            <span className="gap-type-tag data">Data & Benchmark</span>
-                                            <h4 className="gap-card-title">{gap.gap}</h4>
-                                        </div>
+                                    <div key={idx} className="gap-detail-card data-card">
+                                        <h4 className="gap-card-title">{gap.gap}</h4>
                                         <p className="gap-explanation">{gap.explanation}</p>
                                         <div className="gap-proposed-approach">
                                             <strong>Recommended Evaluation Protocol:</strong> {gap.proposedApproach}
@@ -200,17 +212,20 @@ export default function GapsTool() {
 
                     {/* Theoretical Blindspots */}
                     {result.theoreticalBlindspots && result.theoreticalBlindspots.length > 0 && (
-                        <div className="synthesis-section">
-                            <h3 className="synthesis-section-title">
-                                Theoretical & Foundational Blindspots
-                            </h3>
+                        <div className="synthesis-section gap-category-section theoretical-section">
+                            <div className="gap-section-header">
+                                <span className="gap-category-indicator theoretical"></span>
+                                <h3 className="synthesis-section-title theoretical-title">
+                                    Theoretical & Foundational Blindspots
+                                </h3>
+                                <span className="gap-count-badge theoretical-badge">
+                                    {result.theoreticalBlindspots.length} Gaps
+                                </span>
+                            </div>
                             <div className="gaps-cards-list">
                                 {result.theoreticalBlindspots.map((gap, idx) => (
-                                    <div key={idx} className="gap-detail-card">
-                                        <div className="gap-card-header">
-                                            <span className="gap-type-tag theoretical">Theoretical</span>
-                                            <h4 className="gap-card-title">{gap.gap}</h4>
-                                        </div>
+                                    <div key={idx} className="gap-detail-card theoretical-card">
+                                        <h4 className="gap-card-title">{gap.gap}</h4>
                                         <p className="gap-explanation">{gap.explanation}</p>
                                         <div className="gap-proposed-approach">
                                             <strong>Theoretical Opportunity:</strong> {gap.proposedApproach}
