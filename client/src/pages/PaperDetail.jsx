@@ -70,11 +70,16 @@ function PaperDetail() {
         const trimmedQuestion = nextQuestion.trim();
         if (!trimmedQuestion || asking) return;
 
+        const historyPayload = messages.map(m => ({
+            role: m.role === "user" ? "user" : "assistant",
+            content: m.text
+        }));
+
         setQuestion("");
         setMessages(current => [...current, { role: "user", text: trimmedQuestion }]);
         setAsking(true);
         try {
-            const data = await askPaper(id, trimmedQuestion);
+            const data = await askPaper(id, trimmedQuestion, historyPayload);
             setMessages(current => [...current, { role: "assistant", text: data.answer }]);
         } catch (requestError) {
             setMessages(current => [...current, { role: "assistant", text: requestError.message || "Aether was unable to process this paper. Please try again." }]);

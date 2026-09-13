@@ -37,10 +37,10 @@ export function getKeywords(id){
     return request(`/paper/${encodeURIComponent(id)}/keywords`);
 }
 
-export function askPaper(id, question){
+export function askPaper(id, question, history = []){
     return request(`/paper/${encodeURIComponent(id)}/chat`, {
         method: "POST",
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question, history })
     });
 }
 

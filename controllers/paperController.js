@@ -273,15 +273,13 @@ async function chatWithPaper(req,res){
     try{
         const id = req.params.id;
         const question = req.body.question;
+        const history = Array.isArray(req.body.history) ? req.body.history : [];
 
         if(!question || !question.trim()){
             return res.status(400).json({
                 error:"Please enter a question."
             });
         }
-
-        console.log("CHAT REQUEST:", id);
-        console.log("QUESTION:", question);
 
         // Check if custom uploaded paper with stored fullText
         if (id.startsWith("custom_")) {
@@ -294,7 +292,7 @@ async function chatWithPaper(req,res){
                     };
                     const vectorStore = await ragService.getPaperVectorStore(paperData, cachedCustom.fullText);
                     const relevantDocuments = await ragService.retrieveRelevantChunks(vectorStore, question);
-                    const answer = await ragService.generateRAGAnswer(question, relevantDocuments);
+                    const answer = await ragService.generateRAGAnswer(question, relevantDocuments, history);
                     return res.json({
                         answer,
                         source: "full-paper"
@@ -353,13 +351,10 @@ async function chatWithPaper(req,res){
 
         // Remove duplicate URLs
         const uniquePdfUrls = [...new Set(pdfUrls)];
-        console.log("PDF locations found:", uniquePdfUrls.length);
 
         // Try every available PDF
         for(const pdfUrl of uniquePdfUrls){
             try{
-                console.log("Trying PDF:", pdfUrl);
-
                 const paperData = {
                     id: paper.id.split("/").pop(),
                     title: paper.display_name,
@@ -368,8 +363,6 @@ async function chatWithPaper(req,res){
 
                 const vectorStore =
                     await ragService.getPaperVectorStore(paperData);
-
-                console.log("PDF successfully processed.");
 
                 const relevantDocuments =
                     await ragService.retrieveRelevantChunks(
@@ -380,7 +373,8 @@ async function chatWithPaper(req,res){
                 const answer =
                     await ragService.generateRAGAnswer(
                         question,
-                        relevantDocuments
+                        relevantDocuments,
+                        history
                     );
 
                 return res.json({
@@ -389,13 +383,11 @@ async function chatWithPaper(req,res){
                 });
 
             }catch(pdfError){
-                console.log("PDF failed:", pdfUrl, pdfError.message);
+                // PDF failed, try next
             }
         }
 
         // If every PDF failed, use abstract fallback
-        console.log("No accessible PDF. Trying abstract fallback.");
-
         const abstract = reconstructAbstract(paper.abstract_inverted_index);
 
         if(abstract && abstract.trim().length > 0 && abstract !== "Abstract unavailable."){
@@ -403,7 +395,8 @@ async function chatWithPaper(req,res){
                 await ragService.generateAbstractAnswer(
                     question,
                     paper.display_name,
-                    abstract
+                    abstract,
+                    history
                 );
 
             return res.json({
