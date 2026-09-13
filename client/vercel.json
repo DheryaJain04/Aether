@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://aether-backend-tmff.onrender.com/api/:path*"
+    },
+    {
+      "source": "/paper/:path*",
+      "destination": "https://aether-backend-tmff.onrender.com/paper/:path*"
+    }
+  ]
+}
