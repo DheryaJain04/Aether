@@ -85,6 +85,11 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(reactBuildPath));
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+});
+
 // Apply rate limiting & mount API routes
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/search", generalApiLimiter, apiSearchRouter);
