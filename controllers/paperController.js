@@ -119,6 +119,10 @@ async function uploadPaper(req, res) {
             return res.status(400).json({ error: "Please upload a PDF file." });
         }
 
+        if (!req.file.buffer || req.file.buffer.length < 5 || !req.file.buffer.slice(0, 5).toString("ascii").startsWith("%PDF")) {
+            return res.status(400).json({ error: "Invalid PDF file. The uploaded file does not have a valid PDF header." });
+        }
+
         const data = await pdf(req.file.buffer);
         const fullText = (data.text || "").trim();
 
