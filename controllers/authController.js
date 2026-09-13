@@ -171,6 +171,7 @@ async function login(req, res) {
 function logout(req, res) {
     res.clearCookie(COOKIE_NAME, {
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
         sameSite: "lax"
     });
 
@@ -186,6 +187,7 @@ async function getMe(req, res) {
         if (!user) {
             res.clearCookie(COOKIE_NAME, {
                 httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
                 sameSite: "lax"
             });
             return res.status(401).json({ error: "User session not found." });
@@ -205,9 +207,43 @@ async function getMe(req, res) {
     }
 }
 
+// DELETE /api/auth/account - Delete user account and associated data
+async function deleteAccount(req, res) {
+    try {
+        const userId = req.user.id;
+        const { password } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        if (password) {
+            const isMatch = await bcrypt.compare(password, user.passwordHash);
+            if (!isMatch) {
+                return res.status(400).json({ error: "Incorrect password provided for account deletion." });
+            }
+        }
+
+        await User.findByIdAndDelete(userId);
+
+        res.clearCookie(COOKIE_NAME, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
+
+        return res.json({ message: "Account and associated data deleted successfully." });
+    } catch (err) {
+        console.error("Delete account error:", err.message);
+        return res.status(500).json({ error: "Failed to delete account." });
+    }
+}
+
 module.exports = {
     signup,
     login,
     logout,
-    getMe
+    getMe,
+    deleteAccount
 };
