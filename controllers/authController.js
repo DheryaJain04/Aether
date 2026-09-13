@@ -16,6 +16,9 @@ function validatePasswordPolicy(password) {
     if (!password || password.length < 8) {
         return "Password must be at least 8 characters long.";
     }
+    if (password.length > 72) {
+        return "Password cannot exceed 72 characters.";
+    }
     if (!/[A-Z]/.test(password)) {
         return "Password must contain at least one uppercase letter.";
     }
@@ -42,15 +45,23 @@ async function signup(req, res) {
     try {
         const { name, email, password } = req.body;
 
-        if (!name || !name.trim()) {
+        if (!name || typeof name !== "string" || !name.trim()) {
             return res.status(400).json({ error: "Full name is required." });
         }
 
-        if (!email || !email.trim()) {
+        if (name.trim().length > 100) {
+            return res.status(400).json({ error: "Full name cannot exceed 100 characters." });
+        }
+
+        if (!email || typeof email !== "string" || !email.trim()) {
             return res.status(400).json({ error: "Email address is required." });
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email.trim().length > 255) {
+            return res.status(400).json({ error: "Email address cannot exceed 255 characters." });
+        }
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(email.trim())) {
             return res.status(400).json({ error: "Please enter a valid email address." });
         }
