@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { changePassword, deleteAccount } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import "./AccountSettingsModal.css";
@@ -57,9 +58,9 @@ export default function AccountSettingsModal({ isOpen, onClose }) {
         }
     }
 
-    return (
-        <div className="settings-modal-overlay" onClick={onClose}>
-            <div className="settings-modal-card" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    const modalContent = (
+        <div className="settings-modal-overlay" onClick={onClose} aria-modal="true" role="dialog">
+            <div className="settings-modal-card" onClick={e => e.stopPropagation()} aria-labelledby="settings-title">
                 <div className="settings-modal-header">
                     <h2 id="settings-title">Account Settings</h2>
                     <button type="button" className="settings-close-btn" onClick={onClose} aria-label="Close settings">✕</button>
@@ -165,4 +166,6 @@ export default function AccountSettingsModal({ isOpen, onClose }) {
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }
