@@ -7,64 +7,29 @@ const aetherScoreService = require("../services/aetherScoreService");
 const Paper = require("../models/Paper");
 const SearchHistory = require("../models/SearchHistory");
 
-function generateScholarlyOverview(paper) {
-    if (!paper) return "Scholarly publication. Explore full research analysis, citations, and AI chat via View Paper.";
-    
-    const title = cleanXmlTags(paper.display_name || "This research");
-    const year = paper.publication_year ? `(${paper.publication_year})` : "";
-    const journal = paper.primary_location?.source?.display_name || paper.journal || "";
-    
-    // Extract key conceptual themes from OpenAlex topics, concepts, and keywords
-    const topics = [
-        paper.primary_topic?.display_name,
-        ...(Array.isArray(paper.topics) ? paper.topics.map(t => t.display_name) : []),
-        ...(Array.isArray(paper.concepts) ? paper.concepts.map(c => c.display_name) : []),
-        ...(Array.isArray(paper.keywords) ? paper.keywords.map(k => k.display_name) : [])
-    ].filter(Boolean);
-
-    const uniqueThemes = [...new Set(topics)].slice(0, 4);
-    const themesText = uniqueThemes.length > 0 ? `Key academic domains include ${uniqueThemes.join(", ")}.` : "";
-    const venueText = journal && journal !== "Unknown Source" && journal !== "Research Paper" ? `Published in ${journal}.` : "";
-    const citationCount = typeof paper.cited_by_count === "number" ? paper.cited_by_count : (paper.citedBy || 0);
-    const citationText = citationCount > 0 ? `Referenced across ${Number(citationCount).toLocaleString()} academic citations.` : "";
-
-    const parts = [
-        `Scholarly research ${year} investigating ${title.replace(/\.$/, "")}.`,
-        venueText,
-        themesText,
-        citationText,
-        "Click View Paper for AI synthesis, key findings, and interactive chat."
-    ].filter(Boolean);
-
-    return parts.join(" ");
-}
-
-// Helper fn to reconstruct abstract from inverted index or generate intelligent scholarly overview
-function reconstructAbstract(invertedIndex, rawAbstractText, paper = null){
-    if(rawAbstractText && rawAbstractText.trim().length > 15 && !rawAbstractText.includes("Abstract unavailable")){
+// Helper fn to reconstruct abstract from inverted index or return direct string
+function reconstructAbstract(invertedIndex, rawAbstractText){
+    if(rawAbstractText && rawAbstractText.trim().length > 10){
         return rawAbstractText.trim();
     }
 
-    if(invertedIndex && typeof invertedIndex === "object"){
-        const wordPositions = [];
-        for(const [word, positions] of Object.entries(invertedIndex)){
-            if(Array.isArray(positions)){
-                positions.forEach(position => {
-                    wordPositions[position] = word;
-                });
-            }
-        }
-        const reconstructed = wordPositions.filter(Boolean).join(" ");
-        if (reconstructed.trim().length > 15) {
-            return reconstructed.trim();
+    if(!invertedIndex || typeof invertedIndex !== "object"){
+        return "Abstract unavailable.";
+    }
+
+    const wordPositions = [];
+
+    for(const [word, positions] of Object.entries(invertedIndex)){
+        if(Array.isArray(positions)){
+            positions.forEach(position => {
+                wordPositions[position] = word;
+            });
         }
     }
 
-    if (paper) {
-        return generateScholarlyOverview(paper);
-    }
-
-    return "Scholarly publication. Explore full research analysis, citations, and AI chat via View Paper.";
+    // Filter out undefined positions and join with clean spacing
+    const reconstructed = wordPositions.filter(Boolean).join(" ");
+    return reconstructed.trim() || "Abstract unavailable.";
 }
 
 function cleanXmlTags(text){
@@ -343,7 +308,7 @@ async function getSearchResults(query){
         const displayedAuthors = authorNames.slice(0, 3).join(" • ") +
             (authorNames.length > 3 ? ` +${authorNames.length - 3} more` : "");
 
-        const abstract = reconstructAbstract(paper.abstract_inverted_index, paper.raw_abstract, paper);
+        const abstract = reconstructAbstract(paper.abstract_inverted_index, paper.raw_abstract);
         const paperId = paper.id.split("/").pop();
 
         // Cache paper in MongoDB asynchronously

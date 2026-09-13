@@ -29,10 +29,6 @@ async function generateWithQwen(prompt){
 
 // Generate paper summary using Gemini
 async function getSummary(title, abstract){
-    const effectiveAbstract = (abstract && abstract.trim().length > 20 && !abstract.includes("Abstract unavailable"))
-        ? abstract
-        : `(Abstract was not supplied in the open index. Based on the scholarly publication title "${title}", synthesize the core research motivation, expected methodology, and academic significance.)`;
-
     const prompt = `
 You are Aether, an AI research assistant.
 
@@ -45,13 +41,14 @@ The summary should:
 - Explain the significance of the research.
 - Be concise but informative.
 - Use clear language suitable for a university student.
+- Do not invent information not present in the provided abstract.
 - Return only the summary without greetings, headings, introductions, or markdown formatting.
 
 Title:
 ${title}
 
-Abstract / Research Context:
-${effectiveAbstract}
+Abstract:
+${abstract}
 `;
 
     // Primary: Gemini
@@ -114,10 +111,6 @@ ${effectiveAbstract}
 
 // Generate paper keywords using Groq
 async function getKeywords(title,abstract){
-    const effectiveAbstract = (abstract && abstract.trim().length > 20 && !abstract.includes("Abstract unavailable"))
-        ? abstract
-        : `(Abstract not in open index. Derive academic keywords from title: "${title}")`;
-
     const prompt = `
 You are Aether, an AI research assistant.
 
@@ -129,12 +122,13 @@ Rules:
 - Do not number the keywords.
 - Do not include explanations.
 - Do not include headings.
+- Do not invent concepts unrelated to the provided abstract.
 
 Title:
 ${title}
 
-Abstract / Research Context:
-${effectiveAbstract}
+Abstract:
+${abstract}
 `;
 
     try{

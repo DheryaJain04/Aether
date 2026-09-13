@@ -7,63 +7,21 @@ const ragService = require("../services/ragService");
 const Paper = require("../models/Paper");
 const ViewHistory = require("../models/ViewHistory");
 
-function generateScholarlyOverview(paper) {
-    if (!paper) return "Scholarly publication. Explore full research analysis, citations, and AI chat via Ask Aether.";
-    
-    const title = paper.display_name || paper.title || "This research";
-    const year = paper.publication_year || paper.year ? `(${paper.publication_year || paper.year})` : "";
-    const journal = paper.primary_location?.source?.display_name || paper.journal || "";
-    
-    const topics = [
-        paper.primary_topic?.display_name,
-        ...(Array.isArray(paper.topics) ? paper.topics.map(t => t.display_name) : []),
-        ...(Array.isArray(paper.concepts) ? paper.concepts.map(c => c.display_name) : []),
-        ...(Array.isArray(paper.keywords) ? paper.keywords.map(k => k.display_name) : [])
-    ].filter(Boolean);
-
-    const uniqueThemes = [...new Set(topics)].slice(0, 4);
-    const themesText = uniqueThemes.length > 0 ? `Key academic domains include ${uniqueThemes.join(", ")}.` : "";
-    const venueText = journal && journal !== "Unknown Source" && journal !== "Research Paper" ? `Published in ${journal}.` : "";
-    const citationCount = typeof paper.cited_by_count === "number" ? paper.cited_by_count : (paper.citedBy || 0);
-    const citationText = citationCount > 0 ? `Accumulated ${Number(citationCount).toLocaleString()} scholarly citations.` : "";
-
-    const parts = [
-        `Scholarly research ${year} investigating ${title.replace(/\.$/, "")}.`,
-        venueText,
-        themesText,
-        citationText,
-        "Full abstract was not indexed in open repository. Explore AI-generated summaries and vector-grounded chat below."
-    ].filter(Boolean);
-
-    return parts.join(" ");
-}
-
-// Helper fn to reconstruct abstract from OpenAlex or fallback to scholarly overview
-function reconstructAbstract(invertedIndex, rawAbstractText, paper = null){
-    if(rawAbstractText && rawAbstractText.trim().length > 15 && !rawAbstractText.includes("Abstract unavailable")){
-        return rawAbstractText.trim();
+// Helper fn to reconstruct abstract from OpenAlex
+function reconstructAbstract(invertedIndex){
+    if(!invertedIndex){
+        return "Abstract unavailable.";
     }
 
-    if(invertedIndex && typeof invertedIndex === "object"){
-        const words = [];
-        for(const word in invertedIndex){
-            if(Array.isArray(invertedIndex[word])){
-                invertedIndex[word].forEach(position => {
-                    words[position] = word;
-                });
-            }
-        }
-        const reconstructed = words.filter(Boolean).join(" ");
-        if (reconstructed.trim().length > 15) {
-            return reconstructed.trim();
-        }
+    const words = [];
+
+    for(const word in invertedIndex){
+        invertedIndex[word].forEach(position=>{
+            words[position] = word;
+        });
     }
 
-    if (paper) {
-        return generateScholarlyOverview(paper);
-    }
-
-    return "Scholarly publication. Explore full research analysis, citations, and AI chat via Ask Aether.";
+    return words.join(" ");
 }
 
 const pdf = require("pdf-parse");
@@ -138,7 +96,7 @@ async function getPaperData(req, res){
                 year: paper.publication_year || "Unknown Year",
                 doi: paper.doi ? paper.doi.replace("https://doi.org/", "") : null,
                 openAccess: paper.open_access?.is_oa || false,
-                abstract: reconstructAbstract(paper.abstract_inverted_index, null, paper),
+                abstract: reconstructAbstract(paper.abstract_inverted_index),
                 citations: citationService.generateCitations(paper)
             }
         });

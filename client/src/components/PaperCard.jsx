@@ -123,17 +123,10 @@ function PaperCard({ paper, searchQuery, onSavedChange, showScore = true }){
                     </a>
                 )}
 
-                {paper.abstract && paper.abstract.trim() !== "Abstract unavailable." ? (
+                {paper.abstract && (
                     <div className="section abstract-section">
                         <h4>Abstract</h4>
                         <p className="abstract">{paper.abstract}</p>
-                    </div>
-                ) : (
-                    <div className="section abstract-section">
-                        <h4>Overview</h4>
-                        <p className="abstract">
-                            Scholarly research investigating {paper.title?.replace(/\.$/, "") || "this topic"}. Open index did not include full abstract text. Click <strong>View Paper ↗</strong> for AI-generated summary, key concepts, and interactive chat.
-                        </p>
                     </div>
                 )}
 
