@@ -18,19 +18,32 @@ export function getSavedPapers(){
     }
 }
 
+export function saveSavedPapers(papers) {
+    try {
+        const key = getStorageKey();
+        localStorage.setItem(key, JSON.stringify(papers));
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("aether-saved-updated"));
+        }
+    } catch (e) {
+        console.error("Failed to save papers to localStorage", e);
+    }
+    return papers;
+}
+
 export function isPaperSaved(id){
     if (!id) return false;
-    return getSavedPapers().some(paper => paper.id === id);
+    return getSavedPapers().some(paper => String(paper.id) === String(id));
 }
 
 export function toggleSavedPaper(paper){
     if (!paper || !paper.id) return false;
     const saved = getSavedPapers();
-    const alreadySaved = saved.some(item => item.id === paper.id);
+    const alreadySaved = saved.some(item => String(item.id) === String(paper.id));
 
     let next;
     if (alreadySaved) {
-        next = saved.filter(item => item.id !== paper.id);
+        next = saved.filter(item => String(item.id) !== String(paper.id));
     } else {
         const originTopic = paper.originTopic || paper.searchQuery || (typeof sessionStorage !== "undefined" ? sessionStorage.getItem("aether_last_search_query") : "") || "";
         const entry = {
@@ -49,31 +62,18 @@ export function toggleSavedPaper(paper){
         next = [entry, ...saved];
     }
 
-    try {
-        localStorage.setItem(getStorageKey(), JSON.stringify(next));
-        if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("aether-saved-updated"));
-        }
-    } catch (e) {
-        console.error("Failed to save paper to localStorage", e);
-    }
-
+    saveSavedPapers(next);
     return !alreadySaved;
 }
 
 export function updateSavedPaper(paperId, updates) {
     const saved = getSavedPapers();
     const next = saved.map(p => {
-        if (p.id === paperId) {
+        if (String(p.id) === String(paperId)) {
             return { ...p, ...updates };
         }
         return p;
     });
-    try {
-        localStorage.setItem(getStorageKey(), JSON.stringify(next));
-        if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("aether-saved-updated"));
-        }
-    } catch (e) {}
+    saveSavedPapers(next);
     return next;
 }

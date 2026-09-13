@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PaperCard from "../components/PaperCard";
 import PlaylistMenu from "../components/PlaylistMenu";
@@ -33,6 +33,15 @@ export default function SavedPapers() {
         setPapers(getSavedPapers());
         setPlaylists(getCustomPlaylists());
     }
+
+    useEffect(() => {
+        window.addEventListener("aether-saved-updated", reloadData);
+        window.addEventListener("storage", reloadData);
+        return () => {
+            window.removeEventListener("aether-saved-updated", reloadData);
+            window.removeEventListener("storage", reloadData);
+        };
+    }, []);
 
     const isCustomPlaylist = selectedPlaylistId !== "all" && !selectedPlaylistId.startsWith("topic_");
 
@@ -80,7 +89,7 @@ export default function SavedPapers() {
             const targetTopic = topicGroup?.name?.toLowerCase();
             list = papers.filter(p => (p.originTopic || p.searchQuery || "").toLowerCase() === targetTopic);
         } else {
-            list = papers.filter(p => Array.isArray(p.playlists) && p.playlists.includes(selectedPlaylistId));
+            list = papers.filter(p => Array.isArray(p.playlists) && p.playlists.some(plId => String(plId) === String(selectedPlaylistId)));
         }
 
         if (filterQuery.trim()) {
@@ -108,7 +117,7 @@ export default function SavedPapers() {
     }, [papers, modalFilterQuery]);
 
     const modalInPlaylistCount = useMemo(() => {
-        return papers.filter(p => Array.isArray(p.playlists) && p.playlists.includes(selectedPlaylistId)).length;
+        return papers.filter(p => Array.isArray(p.playlists) && p.playlists.some(plId => String(plId) === String(selectedPlaylistId))).length;
     }, [papers, selectedPlaylistId]);
 
     function handleCreatePlaylistSubmit(e) {
@@ -463,7 +472,7 @@ export default function SavedPapers() {
                                 </div>
                             ) : (
                                 modalFilteredPapers.map(p => {
-                                    const inThisPl = Array.isArray(p.playlists) && p.playlists.includes(selectedPlaylistId);
+                                    const inThisPl = Array.isArray(p.playlists) && p.playlists.some(plId => String(plId) === String(selectedPlaylistId));
                                     return (
                                         <div key={p.id} className={`modal-paper-item ${inThisPl ? "is-in-playlist" : ""}`}>
                                             <div className="modal-paper-info">

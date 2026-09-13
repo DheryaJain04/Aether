@@ -1,4 +1,4 @@
-import { getSavedPapers, updateSavedPaper } from "./savedPapers";
+import { getSavedPapers, updateSavedPaper, saveSavedPapers } from "./savedPapers";
 import { createCollection, addPaperToCollection, removePaperFromCollection } from "./api";
 
 function getPlaylistStorageKey() {
@@ -122,7 +122,7 @@ export function getSmartTopicGroups(papers) {
 export function togglePaperPlaylist(paperId, playlistId) {
     const saved = getSavedPapers();
     const updated = saved.map(paper => {
-        if (paper.id === paperId) {
+        if (String(paper.id) === String(paperId)) {
             const currentLists = Array.isArray(paper.playlists) ? paper.playlists : [];
             const exists = currentLists.includes(playlistId);
             const nextLists = exists
@@ -133,17 +133,14 @@ export function togglePaperPlaylist(paperId, playlistId) {
         return paper;
     });
 
-    try {
-        localStorage.setItem("aether-saved-papers", JSON.stringify(updated));
-    } catch (e) {}
-
+    saveSavedPapers(updated);
     return updated;
 }
 
 export function addPaperToPlaylist(paperId, playlistId) {
     const saved = getSavedPapers();
     const updated = saved.map(paper => {
-        if (paper.id === paperId) {
+        if (String(paper.id) === String(paperId)) {
             const currentLists = Array.isArray(paper.playlists) ? paper.playlists : [];
             if (!currentLists.includes(playlistId)) {
                 return { ...paper, playlists: [...currentLists, playlistId] };
@@ -152,27 +149,21 @@ export function addPaperToPlaylist(paperId, playlistId) {
         return paper;
     });
 
-    try {
-        localStorage.setItem("aether-saved-papers", JSON.stringify(updated));
-    } catch (e) {}
-
+    saveSavedPapers(updated);
     return updated;
 }
 
 export function removePaperFromPlaylist(paperId, playlistId) {
     const saved = getSavedPapers();
     const updated = saved.map(paper => {
-        if (paper.id === paperId) {
+        if (String(paper.id) === String(paperId)) {
             const currentLists = Array.isArray(paper.playlists) ? paper.playlists : [];
             return { ...paper, playlists: currentLists.filter(id => id !== playlistId) };
         }
         return paper;
     });
 
-    try {
-        localStorage.setItem("aether-saved-papers", JSON.stringify(updated));
-    } catch (e) {}
-
+    saveSavedPapers(updated);
     return updated;
 }
 

@@ -69,7 +69,7 @@ export default function PlaylistMenu({ paper, onPlaylistChange }) {
                             <p className="no-playlists-hint">No playlists yet. Create one below!</p>
                         ) : (
                             playlists.map(pl => {
-                                const isChecked = assignedLists.includes(pl.id);
+                                const isChecked = assignedLists.some(id => String(id) === String(pl.id));
                                 return (
                                     <label key={pl.id} className="playlist-check-item">
                                         <input
