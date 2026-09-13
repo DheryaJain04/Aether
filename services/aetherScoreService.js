@@ -13,6 +13,25 @@ const RANKING_WEIGHTS = {
         freshness: 0.10,
         venue: 0.05
     },
+    freshness: {
+        relevance: 0.40,
+        impact: 0.10,
+        freshness: 0.40,
+        venue: 0.10
+    },
+    impact: {
+        relevance: 0.35,
+        impact: 0.45,
+        freshness: 0.05,
+        venue: 0.15
+    },
+    venue: {
+        relevance: 0.35,
+        impact: 0.10,
+        freshness: 0.10,
+        venue: 0.45
+    },
+    // Backwards compatibility aliases
     latest: {
         relevance: 0.40,
         impact: 0.10,
@@ -333,29 +352,13 @@ function rankPapers(papers){
                 };
 
                 const scores = {
-                    balanced:
-                        calculateAetherScore(
-                            components,
-                            "balanced"
-                        ),
-
-                    relevant:
-                        calculateAetherScore(
-                            components,
-                            "relevant"
-                        ),
-
-                    latest:
-                        calculateAetherScore(
-                            components,
-                            "latest"
-                        ),
-
-                    influential:
-                        calculateAetherScore(
-                            components,
-                            "influential"
-                        )
+                    balanced: calculateAetherScore(components, "balanced"),
+                    relevant: calculateAetherScore(components, "relevant"),
+                    freshness: calculateAetherScore(components, "freshness"),
+                    impact: calculateAetherScore(components, "impact"),
+                    venue: calculateAetherScore(components, "venue"),
+                    latest: calculateAetherScore(components, "latest"),
+                    influential: calculateAetherScore(components, "influential")
                 };
 
                 return {
