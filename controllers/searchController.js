@@ -5,6 +5,7 @@ const axios = require("axios");
 const relevanceService = require("../services/relevanceService");
 const aetherScoreService = require("../services/aetherScoreService");
 const Paper = require("../models/Paper");
+const SearchHistory = require("../models/SearchHistory");
 
 // Helper fn to reconstruct abstract from inverted index or return direct string
 function reconstructAbstract(invertedIndex, rawAbstractText){
@@ -361,6 +362,17 @@ async function searchPapersAPI(req, res){
         }
 
         const papers = await getSearchResults(query);
+
+        // Asynchronously record search history for authenticated users
+        if (req.user?.id) {
+            SearchHistory.create({
+                userId: req.user.id,
+                query: query.trim(),
+                rankingMode: req.query.mode || "balanced"
+            }).catch(err => {
+                console.warn("[SearchHistory] Failed to record search history:", err.message);
+            });
+        }
 
         res.json({
             query,

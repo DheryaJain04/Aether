@@ -22,6 +22,9 @@ const searchHistorySchema =
                 enum:[
                     "balanced",
                     "relevant",
+                    "freshness",
+                    "impact",
+                    "venue",
                     "latest",
                     "influential"
                 ],
