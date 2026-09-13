@@ -6,6 +6,7 @@ import { isPaperSaved, toggleSavedPaper } from "../services/savedPapers";
 import AetherBrand from "../components/AetherBrand";
 import SavedPapersLink from "../components/SavedPapersLink";
 import UserMenu from "../components/UserMenu";
+import MarkdownText from "../components/MarkdownText";
 import "./PaperDetail.css";
 
 const welcomeMessage = "Ask me anything about this research paper. I can help explain concepts, methodology, findings, and more.";
@@ -30,6 +31,7 @@ function PaperDetail() {
     const [asking, setAsking] = useState(false);
     const [saved, setSaved] = useState(false);
     const [copiedCitation, setCopiedCitation] = useState("");
+    const [copiedMessageIdx, setCopiedMessageIdx] = useState(null);
     const messagesRef = useRef(null);
 
     useEffect(() => {
@@ -177,18 +179,114 @@ function PaperDetail() {
 
                         <aside className="chat-panel">
                             <div className="chat-glow"></div>
-                            <div className="chat-header"><div className="chat-brand"><div className="ai-icon">✦</div><div><h3>Ask Aether</h3><p>Chat with this paper</p></div></div><span className="ai-status"><span></span>AI</span></div>
+                            <div className="chat-header">
+                                <div className="chat-brand">
+                                    <div className="ai-icon">✦</div>
+                                    <div>
+                                        <h3>Ask Aether</h3>
+                                        <p>Chat with this paper</p>
+                                    </div>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    {messages.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setMessages([{ role: "assistant", text: welcomeMessage }])}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "var(--text-muted, #64748b)",
+                                                fontSize: "0.8rem",
+                                                cursor: "pointer",
+                                                padding: "4px 8px",
+                                                borderRadius: "4px"
+                                            }}
+                                            title="Clear chat history"
+                                        >
+                                            Reset
+                                        </button>
+                                    )}
+                                    <span className="ai-status"><span></span>AI</span>
+                                </div>
+                            </div>
                             <div className="grounded-notice"><span>◌</span>Answers are grounded in the full text of this research paper.</div>
                             <div className="chat-messages" ref={messagesRef}>
                                 {messages.map((message, index) => message.role === "user" ? (
-                                    <div className="message-row user-row" key={`${message.text}-${index}`}><div className="message-content"><span className="message-name user-name">YOU</span><div className="user-message">{message.text}</div></div></div>
+                                    <div className="message-row user-row" key={`${message.text}-${index}`}>
+                                        <div className="message-content">
+                                            <span className="message-name user-name">YOU</span>
+                                            <div className="user-message">{message.text}</div>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <div className="message-row aether-row" key={`${message.text}-${index}`}><div className="message-avatar">✦</div><div className="message-content"><span className="message-name">AETHER</span><div className="aether-message">{message.text}</div></div></div>
+                                    <div className="message-row aether-row" key={`${message.text}-${index}`}>
+                                        <div className="message-avatar">✦</div>
+                                        <div className="message-content" style={{ width: "100%" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                <span className="message-name">AETHER</span>
+                                                {index > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            try {
+                                                                await navigator.clipboard.writeText(message.text);
+                                                                setCopiedMessageIdx(index);
+                                                                setTimeout(() => setCopiedMessageIdx(null), 1500);
+                                                            } catch {}
+                                                        }}
+                                                        style={{
+                                                            background: "none",
+                                                            border: "none",
+                                                            color: copiedMessageIdx === index ? "#10b981" : "var(--text-muted, #94a3b8)",
+                                                            fontSize: "0.75rem",
+                                                            cursor: "pointer",
+                                                            padding: "2px 6px"
+                                                        }}
+                                                        title="Copy answer to clipboard"
+                                                    >
+                                                        {copiedMessageIdx === index ? "✓ Copied" : "Copy"}
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="aether-message">
+                                                <MarkdownText content={message.text} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                                {asking && <div className="message-row aether-row"><div className="message-avatar">✦</div><div className="message-content"><span className="message-name">AETHER</span><div className="aether-message loading-answer">Aether is reading the paper…</div></div></div>}
+                                {asking && (
+                                    <div className="message-row aether-row">
+                                        <div className="message-avatar">✦</div>
+                                        <div className="message-content">
+                                            <span className="message-name">AETHER</span>
+                                            <div className="aether-message loading-answer">Aether is reading the paper…</div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div className="suggested-questions">{suggestedQuestions.map(item => <button type="button" key={item} disabled={asking} onClick={() => sendQuestion(item)}>{item.replace("What is the ", "").replace("What ", "")}</button>)}</div>
-                            <form className="chat-form" onSubmit={event => { event.preventDefault(); sendQuestion(question); }}><input value={question} onChange={event => setQuestion(event.target.value)} placeholder="Ask about this paper..." autoComplete="off" disabled={asking} required /><button type="submit" className="send-btn" aria-label="Send question" disabled={asking}>↑</button></form>
+                            <div className="suggested-questions">
+                                {suggestedQuestions.map(item => (
+                                    <button
+                                        type="button"
+                                        key={item}
+                                        disabled={asking}
+                                        onClick={() => sendQuestion(item)}
+                                    >
+                                        {item.replace("What is the ", "").replace("What ", "")}
+                                    </button>
+                                ))}
+                            </div>
+                            <form className="chat-form" onSubmit={event => { event.preventDefault(); sendQuestion(question); }}>
+                                <input
+                                    value={question}
+                                    onChange={event => setQuestion(event.target.value)}
+                                    placeholder="Ask about this paper..."
+                                    autoComplete="off"
+                                    disabled={asking}
+                                    required
+                                />
+                                <button type="submit" className="send-btn" aria-label="Send question" disabled={asking}>↑</button>
+                            </form>
                             <p className="chat-footer">Aether answers using retrieved context from the paper.</p>
                         </aside>
                     </div>
