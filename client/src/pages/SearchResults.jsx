@@ -76,9 +76,29 @@ function SearchResults() {
         }
     }
 
-    // Multi-factor ranking mode & custom weights state
-    const [activeMode, setActiveMode] = useState("balanced");
-    const [weights, setWeights] = useState(RANKING_MODES.balanced.weights);
+    // Multi-factor ranking mode & custom weights state with persistence
+    const initialMode = useMemo(() => {
+        const urlMode = searchParams.get("mode");
+        if (urlMode && RANKING_MODES[urlMode]) return urlMode;
+        try {
+            const savedMode = sessionStorage.getItem("aether_ranking_mode");
+            if (savedMode && RANKING_MODES[savedMode]) return savedMode;
+        } catch {}
+        return "balanced";
+    }, [searchParams]);
+
+    const [activeMode, setActiveModeState] = useState(initialMode);
+    const [weights, setWeights] = useState(RANKING_MODES[initialMode]?.weights || RANKING_MODES.balanced.weights);
+
+    function setActiveMode(mode) {
+        setActiveModeState(mode);
+        try {
+            sessionStorage.setItem("aether_ranking_mode", mode);
+        } catch {}
+        if (RANKING_MODES[mode]) {
+            setWeights(RANKING_MODES[mode].weights);
+        }
+    }
 
     const LOADING_STEPS = [
         "Connecting to scholarly knowledge graph...",

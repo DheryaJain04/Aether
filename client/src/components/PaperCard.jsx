@@ -13,11 +13,13 @@ function PaperCard({ paper, searchQuery, onSavedChange }){
 
     // Dynamic Aether score from active mode / weights
     const score = paper.dynamicScore ?? paper.scores?.balanced ?? paper.aetherScore ?? "—";
-    const breakdown = paper.scoreBreakdown || {
-        relevance: 50,
-        freshness: 50,
-        impact: 50,
-        venue: 50
+    
+    const rawBreakdown = paper.scoreBreakdown || {};
+    const breakdown = {
+        relevance: Math.min(100, Math.max(0, Math.round(rawBreakdown.relevance ?? 50))),
+        freshness: Math.min(100, Math.max(0, Math.round(rawBreakdown.freshness ?? 50))),
+        impact: Math.min(100, Math.max(0, Math.round(rawBreakdown.impact ?? 50))),
+        venue: Math.min(100, Math.max(0, Math.round(rawBreakdown.venue ?? 50)))
     };
 
     useEffect(() => {
