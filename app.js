@@ -1,6 +1,3 @@
-const dns = require("dns");
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
-
 require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
@@ -20,9 +17,19 @@ const labRouter = require("./routes/lab");
 
 const reactBuildPath = path.join(__dirname, "client", "dist");
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Explicit request size limits to prevent denial-of-service
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+
+// Security headers
+app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    next();
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(reactBuildPath));
 
