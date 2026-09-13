@@ -36,8 +36,16 @@ function reconstructAbstract(invertedIndex){
     return words.join(" ");
 }
 
-// Build searchable representation of paper
+const paperTextCache = new WeakMap();
+
+// Build searchable representation of paper (memoized to eliminate redundant string allocations)
 function getPaperText(paper){
+    if (paper && typeof paper === "object") {
+        if (paperTextCache.has(paper)) {
+            return paperTextCache.get(paper);
+        }
+    }
+
     const title =
         paper.display_name || "";
 
@@ -61,7 +69,7 @@ function getPaperText(paper){
             )
             .join(" ");
 
-    return `
+    const text = `
 ${title}
 ${title}
 ${title}
@@ -72,6 +80,12 @@ ${topics}
 
 ${keywords}
 `.trim();
+
+    if (paper && typeof paper === "object") {
+        paperTextCache.set(paper, text);
+    }
+
+    return text;
 }
 
 // Normalize text consistently

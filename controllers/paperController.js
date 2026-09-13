@@ -301,7 +301,7 @@ async function chatWithPaper(req,res){
         // Check if custom uploaded paper with stored fullText
         if (id.startsWith("custom_")) {
             const cachedCustom = await Paper.findOne({ openAlexId: id });
-            if (cachedCustom && cachedCustom.fullText) {
+            if (cachedCustom) {
                 try {
                     const paperData = {
                         id: cachedCustom.openAlexId,
@@ -315,7 +315,20 @@ async function chatWithPaper(req,res){
                         source: "full-paper"
                     });
                 } catch (customRagErr) {
-                    console.error("Custom paper RAG error:", customRagErr.message);
+                    console.warn("[Custom Paper RAG] Vector search unavailable, falling back to direct context:", customRagErr.message);
+                    const fallbackContext = cachedCustom.abstract || (cachedCustom.fullText ? cachedCustom.fullText.slice(0, 4000) : "");
+                    if (fallbackContext) {
+                        const answer = await ragService.generateAbstractAnswer(
+                            question,
+                            cachedCustom.title,
+                            fallbackContext,
+                            history
+                        );
+                        return res.json({
+                            answer,
+                            source: "summary-fallback"
+                        });
+                    }
                 }
             }
         }
