@@ -14,6 +14,8 @@ const apiSearchRouter = require("./routes/apiSearch");
 const apiPapersRouter = require("./routes/apiPapers");
 const paperRouter = require("./routes/paper");
 const labRouter = require("./routes/lab");
+const collectionsRouter = require("./routes/collections");
+const projectsRouter = require("./routes/projects");
 
 const reactBuildPath = path.join(__dirname, "client", "dist");
 
@@ -38,6 +40,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/search", apiSearchRouter);
 app.use("/api/papers", apiPapersRouter);
 app.use("/api/lab", labRouter);
+app.use("/api/collections", collectionsRouter);
+app.use("/api/projects", projectsRouter);
 app.use("/paper", paperRouter);
 
 // React SPA Client-Side Routing: Send index.html for all frontend routes
