@@ -18,6 +18,7 @@ export default function GapsTool() {
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
+    const hasValidResult = Boolean(result && !stale);
 
     async function handleRunGaps() {
         if (!canRun) return;
@@ -77,7 +78,7 @@ export default function GapsTool() {
                             title={!canRun ? "Add at least 2 papers" : stale ? "Re-run detection with updated bench papers" : "Detect Research Gaps"}
                         >
                             <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "◎"}</span>
-                            {loading ? "Detecting Gaps..." : stale ? "Re-run Detection" : (result ? "Re-run Detection" : "Detect Gaps")}
+                            {loading ? "Detecting Gaps..." : stale ? "Re-run Detection" : (hasValidResult ? "Re-run Detection" : "Detect Gaps")}
                         </button>
                     </div>
                 )}
@@ -100,19 +101,39 @@ export default function GapsTool() {
                         <span className="lab-run-btn-icon">+</span> Add Papers to Bench
                     </button>
                 </div>
+            ) : !canRun ? (
+                <div className="lab-needs-bench">
+                    <div className="lab-needs-bench-icon">◎</div>
+                    <div className="lab-needs-bench-title">1 paper staged on bench</div>
+                    <div className="lab-needs-bench-text">
+                        Research gap detection requires at least 2 papers on your bench to analyze comparative voids.
+                    </div>
+                    <button className="lab-run-btn" onClick={() => setShowAddModal(true)}>
+                        <span className="lab-run-btn-icon">+</span> Add More Papers ({bench.length}/5)
+                    </button>
+                </div>
             ) : loading ? (
                 <LabPipelineProgress
                     toolName="Research Gap Detector"
                     paperCount={Math.min(bench.length, TOOL_LIMIT)}
                     activeStep={activeStep}
                 />
-            ) : !result ? (
+            ) : !hasValidResult ? (
                 <div className="lab-tool-output-placeholder">
                     <div className="lab-tool-output-placeholder-icon">◎</div>
-                    <div className="lab-tool-output-placeholder-title">Ready to Detect Gaps Across {bench.length} Papers</div>
+                    <div className="lab-tool-output-placeholder-title">Ready to Detect Gaps Across {bench.length} Staged Papers</div>
                     <div className="lab-tool-output-placeholder-text">
-                        Click "Detect Gaps" above. Aether's 5-agent pipeline will surface methodological vulnerabilities,
+                        Click "Detect Research Gaps" below. Aether's 5-agent pipeline will surface methodological vulnerabilities,
                         unaddressed assumptions, and generate actionable future research directions.
+                    </div>
+                    <div style={{ marginTop: "16px" }}>
+                        <button
+                            className="lab-run-btn"
+                            disabled={!canRun || loading}
+                            onClick={handleRunGaps}
+                        >
+                            <span className="lab-run-btn-icon">◎</span> Detect Research Gaps
+                        </button>
                     </div>
                 </div>
             ) : (

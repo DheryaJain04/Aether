@@ -18,6 +18,7 @@ export default function SynthesisTool() {
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
+    const hasValidResult = Boolean(result && !stale);
 
     async function handleRunSynthesis() {
         if (!canRun) return;
@@ -81,7 +82,7 @@ export default function SynthesisTool() {
                             title={!canRun ? "Add at least 2 papers to synthesize" : stale ? "Re-run synthesis with updated bench papers" : "Run Multi-Agent Synthesis"}
                         >
                             <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "✦"}</span>
-                            {loading ? "Synthesizing..." : stale ? "Re-run Synthesis" : (result ? "Re-run Synthesis" : "Run Synthesis")}
+                            {loading ? "Synthesizing..." : stale ? "Re-run Synthesis" : (hasValidResult ? "Re-run Synthesis" : "Run Synthesis")}
                         </button>
                     </div>
                 )}
@@ -106,6 +107,17 @@ export default function SynthesisTool() {
                         <span className="lab-run-btn-icon">+</span> Add Papers to Bench
                     </button>
                 </div>
+            ) : !canRun ? (
+                <div className="lab-needs-bench">
+                    <div className="lab-needs-bench-icon">✦</div>
+                    <div className="lab-needs-bench-title">1 paper staged on bench</div>
+                    <div className="lab-needs-bench-text">
+                        Literature synthesis requires at least 2 papers to compare and extract cross-paper findings.
+                    </div>
+                    <button className="lab-run-btn" onClick={() => setShowAddModal(true)}>
+                        <span className="lab-run-btn-icon">+</span> Add More Papers ({bench.length}/5)
+                    </button>
+                </div>
             ) : loading ? (
                 /* Dynamic Lighting Flowchart Progress */
                 <LabPipelineProgress
@@ -113,14 +125,23 @@ export default function SynthesisTool() {
                     paperCount={Math.min(bench.length, TOOL_LIMIT)}
                     activeStep={activeStep}
                 />
-            ) : !result ? (
+            ) : !hasValidResult ? (
                 /* Output Area Placeholder */
                 <div className="lab-tool-output-placeholder">
                     <div className="lab-tool-output-placeholder-icon">✦</div>
-                    <div className="lab-tool-output-placeholder-title">Ready to Synthesize {bench.length} Papers</div>
+                    <div className="lab-tool-output-placeholder-title">Ready to Synthesize {bench.length} Staged Papers</div>
                     <div className="lab-tool-output-placeholder-text">
-                        Click "Run Synthesis" above. Aether's 5-agent pipeline will extract Intermediate Representations,
+                        Click "Generate Literature Synthesis" below to launch Aether's 5-agent pipeline to extract Intermediate Representations,
                         identify empirical convergences, detect methodological disputes, and synthesize future trajectories.
+                    </div>
+                    <div style={{ marginTop: "16px" }}>
+                        <button
+                            className="lab-run-btn"
+                            disabled={!canRun || loading}
+                            onClick={handleRunSynthesis}
+                        >
+                            <span className="lab-run-btn-icon">✦</span> Generate Literature Synthesis
+                        </button>
                     </div>
                 </div>
             ) : (

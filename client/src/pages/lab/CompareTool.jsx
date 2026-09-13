@@ -32,6 +32,7 @@ export default function CompareTool() {
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
+    const hasValidResult = Boolean(result && !stale);
 
     async function handleRunCompare() {
         if (!canRun) return;
@@ -152,7 +153,7 @@ export default function CompareTool() {
                             title={!canRun ? "Add at least 2 papers" : stale ? "Re-run comparison with updated bench papers" : "Run Side-by-Side Comparison"}
                         >
                             <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "⊞"}</span>
-                            {loading ? "Comparing..." : stale ? "Re-run Comparison" : (result ? "Re-run Comparison" : "Run Comparison")}
+                            {loading ? "Comparing..." : stale ? "Re-run Comparison" : (hasValidResult ? "Re-run Comparison" : "Run Comparison")}
                         </button>
                     </div>
                 )}
@@ -175,18 +176,38 @@ export default function CompareTool() {
                         <span className="lab-run-btn-icon">+</span> Add Papers to Bench
                     </button>
                 </div>
+            ) : !canRun ? (
+                <div className="lab-needs-bench">
+                    <div className="lab-needs-bench-icon">⊞</div>
+                    <div className="lab-needs-bench-title">1 paper staged on bench</div>
+                    <div className="lab-needs-bench-text">
+                        Side-by-side comparison requires at least 2 papers on your bench.
+                    </div>
+                    <button className="lab-run-btn" onClick={() => setShowAddModal(true)}>
+                        <span className="lab-run-btn-icon">+</span> Add More Papers ({bench.length}/5)
+                    </button>
+                </div>
             ) : loading ? (
                 <LabPipelineProgress
                     toolName="Paper Comparison"
                     paperCount={Math.min(bench.length, TOOL_LIMIT)}
                     activeStep={activeStep}
                 />
-            ) : !result ? (
+            ) : !hasValidResult ? (
                 <div className="lab-tool-output-placeholder">
                     <div className="lab-tool-output-placeholder-icon">⊞</div>
-                    <div className="lab-tool-output-placeholder-title">Ready to Compare {bench.length} Papers</div>
+                    <div className="lab-tool-output-placeholder-title">Ready to Compare {bench.length} Staged Papers</div>
                     <div className="lab-tool-output-placeholder-text">
-                        Click "Run Comparison" above to build a multi-column side-by-side evaluation matrix across all staged papers.
+                        Click "Generate Paper Comparison" below to build a multi-column side-by-side evaluation matrix across all staged papers.
+                    </div>
+                    <div style={{ marginTop: "16px" }}>
+                        <button
+                            className="lab-run-btn"
+                            disabled={!canRun || loading}
+                            onClick={handleRunCompare}
+                        >
+                            <span className="lab-run-btn-icon">⊞</span> Generate Paper Comparison
+                        </button>
                     </div>
                 </div>
             ) : (

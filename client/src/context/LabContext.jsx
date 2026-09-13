@@ -82,6 +82,11 @@ export function LabProvider({ children }) {
             if (current.some(p => p.id === paper.id)) return current;
             return [...current, paper];
         });
+        // Invalidate previous tool evaluations so user MUST click Generate to run
+        setToolResults({});
+        try {
+            sessionStorage.removeItem(RESULTS_STORAGE_KEY);
+        } catch {}
     }, []);
 
     const reorderBench = useCallback((newBench) => {
@@ -92,6 +97,11 @@ export function LabProvider({ children }) {
 
     const removeFromBench = useCallback((paperId) => {
         setBench(current => current.filter(p => p.id !== paperId));
+        // Invalidate previous tool evaluations so user MUST click Generate to run
+        setToolResults({});
+        try {
+            sessionStorage.removeItem(RESULTS_STORAGE_KEY);
+        } catch {}
     }, []);
 
     const clearBench = useCallback(() => {

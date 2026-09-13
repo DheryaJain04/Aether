@@ -26,6 +26,7 @@ export default function MatrixTool() {
 
     const hasPapers = bench.length > 0;
     const canRun = bench.length >= 2;
+    const hasValidResult = Boolean(result && !stale);
 
     async function handleRunMatrix() {
         if (!canRun) return;
@@ -86,7 +87,7 @@ export default function MatrixTool() {
                             title={!canRun ? "Add at least 2 papers" : stale ? "Re-run matrix with updated bench papers" : "Build Evidence Matrix"}
                         >
                             <span className="lab-run-btn-icon">{loading ? "◌" : stale ? "↻" : "≡"}</span>
-                            {loading ? "Evaluating..." : stale ? "Re-run Matrix" : (result ? "Re-run Matrix" : "Build Matrix")}
+                            {loading ? "Evaluating..." : stale ? "Re-run Matrix" : (hasValidResult ? "Re-run Matrix" : "Build Matrix")}
                         </button>
                     </div>
                 )}
@@ -109,19 +110,39 @@ export default function MatrixTool() {
                         <span className="lab-run-btn-icon">+</span> Add Papers to Bench
                     </button>
                 </div>
+            ) : !canRun ? (
+                <div className="lab-needs-bench">
+                    <div className="lab-needs-bench-icon">≡</div>
+                    <div className="lab-needs-bench-title">1 paper staged on bench</div>
+                    <div className="lab-needs-bench-text">
+                        Evidence matrix requires at least 2 papers on your bench to cross-evaluate claims.
+                    </div>
+                    <button className="lab-run-btn" onClick={() => setShowAddModal(true)}>
+                        <span className="lab-run-btn-icon">+</span> Add More Papers ({bench.length}/5)
+                    </button>
+                </div>
             ) : loading ? (
                 <LabPipelineProgress
                     toolName="Evidence Matrix"
                     paperCount={Math.min(bench.length, TOOL_LIMIT)}
                     activeStep={activeStep}
                 />
-            ) : !result ? (
+            ) : !hasValidResult ? (
                 <div className="lab-tool-output-placeholder">
                     <div className="lab-tool-output-placeholder-icon">≡</div>
-                    <div className="lab-tool-output-placeholder-title">Ready to Map Claims Across {bench.length} Papers</div>
+                    <div className="lab-tool-output-placeholder-title">Ready to Map Claims Across {bench.length} Staged Papers</div>
                     <div className="lab-tool-output-placeholder-text">
-                        Click "Build Matrix" above. Aether will extract central empirical hypotheses and assess
+                        Click "Build Evidence Matrix" below. Aether will extract central empirical hypotheses and assess
                         each paper's stance with citation excerpts.
+                    </div>
+                    <div style={{ marginTop: "16px" }}>
+                        <button
+                            className="lab-run-btn"
+                            disabled={!canRun || loading}
+                            onClick={handleRunMatrix}
+                        >
+                            <span className="lab-run-btn-icon">≡</span> Build Evidence Matrix
+                        </button>
                     </div>
                 </div>
             ) : (
