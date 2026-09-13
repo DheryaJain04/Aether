@@ -20,6 +20,12 @@ function extractAuthors(paper){
     return "Scholarly Contributor";
 }
 
+function formatDOI(doi) {
+    if (!doi || typeof doi !== "string") return "";
+    const cleanDoi = doi.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//i, "").replace(/^doi:\s*/i, "").trim();
+    return cleanDoi ? `https://doi.org/${cleanDoi}` : "";
+}
+
 function generateAPA(paper){
     const authors = extractAuthors(paper);
     const title = paper.display_name || paper.title || "Untitled Research Paper";
@@ -28,9 +34,9 @@ function generateAPA(paper){
         paper.primary_location?.source?.display_name ||
         paper.journal ||
         "Academic Publication";
-    const doi = paper.doi ? `https://doi.org/${paper.doi.replace("https://doi.org/", "")}` : "";
+    const doiUrl = formatDOI(paper.doi);
 
-    return `${authors} (${year}). ${title}. ${journal}.${doi ? " " + doi : ""}`;
+    return `${authors} (${year}). ${title}. ${journal}.${doiUrl ? " " + doiUrl : ""}`;
 }
 
 function generateIEEE(paper){
@@ -41,9 +47,9 @@ function generateIEEE(paper){
         paper.primary_location?.source?.display_name ||
         paper.journal ||
         "Academic Publication";
-    const doi = paper.doi ? ` doi: ${paper.doi.replace("https://doi.org/", "")}` : "";
+    const doiUrl = formatDOI(paper.doi);
 
-    return `${authors}, "${title}," ${journal}, ${year}.${doi}`;
+    return `${authors}, "${title}," ${journal}, ${year}.${doiUrl ? ` doi: ${doiUrl.replace("https://doi.org/", "")}` : ""}`;
 }
 
 function generateMLA(paper){
@@ -66,9 +72,9 @@ function generateChicago(paper){
         paper.primary_location?.source?.display_name ||
         paper.journal ||
         "Academic Publication";
-    const doi = paper.doi ? `https://doi.org/${paper.doi.replace("https://doi.org/", "")}` : "";
+    const doiUrl = formatDOI(paper.doi);
 
-    return `${authors}. ${year}. "${title}." ${journal}.${doi ? " " + doi : ""}`;
+    return `${authors}. ${year}. "${title}." ${journal}.${doiUrl ? " " + doiUrl : ""}`;
 }
 
 function generateCitations(paper){
