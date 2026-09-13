@@ -4,6 +4,7 @@ const User = require("../models/User");
 
 const COOKIE_NAME = "aether_token";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
 
 function getJwtSecret() {
     if (!process.env.JWT_SECRET) {
@@ -82,8 +83,7 @@ async function signup(req, res) {
         }
 
         // Salt and hash password
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(password, saltRounds);
+        const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
         const newUser = await User.create({
             name: name.trim(),
@@ -265,8 +265,7 @@ async function changePassword(req, res) {
             return res.status(400).json({ error: "Current password is incorrect." });
         }
 
-        const saltRounds = 10;
-        user.passwordHash = await bcrypt.hash(newPassword, saltRounds);
+        user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
         await user.save();
 
         return res.json({ message: "Password updated successfully." });

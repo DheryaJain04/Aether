@@ -358,7 +358,11 @@ async function searchPapersAPI(req, res){
         const query = req.query.q;
 
         if (!query || !query.trim()) {
-            return res.status(400).json({ error: "Search query is required." });
+            return res.json({
+                query: "",
+                count: 0,
+                papers: []
+            });
         }
 
         const papers = await getSearchResults(query);
