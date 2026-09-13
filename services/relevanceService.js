@@ -315,68 +315,23 @@ async function addRelevanceScores(
     query,
     papers
 ){
-    const [
-        denseScores,
-        bm25Scores
-    ] = await Promise.all([
+    let denseScores;
+    try {
+        denseScores = await calculateDenseScores(query, papers);
+    } catch (denseErr) {
+        // Gracefully fall back to BM25 when Ollama/embeddings are unavailable
+        denseScores = papers.map(() => 0.5);
+    }
 
-        calculateDenseScores(
-            query,
-            papers
-        ),
+    const bm25Scores = calculateBM25Scores(query, papers);
 
-        Promise.resolve(
-            calculateBM25Scores(
-                query,
-                papers
-            )
-        )
-    ]);
-
-    return papers.map(
-        (paper,index)=>{
-
-            // Temporary debugging
-            if(index < 5){
-
-                const combined =
-                    0.70 *
-                    denseScores[index] +
-
-                    0.30 *
-                    bm25Scores[index];
-
-                console.log(
-                    `\nRELEVANCE DEBUG: ${paper.display_name}`
-                );
-
-                console.log(
-                    "Dense Score:",
-                    denseScores[index]
-                );
-
-                console.log(
-                    "BM25/Lexical Score:",
-                    bm25Scores[index]
-                );
-
-                console.log(
-                    "Combined Relevance:",
-                    combined
-                );
-            }
-
-            return {
-                ...paper,
-
-                denseScore:
-                    denseScores[index],
-
-                bm25Score:
-                    bm25Scores[index]
-            };
-        }
-    );
+    return papers.map((paper, index) => {
+        return {
+            ...paper,
+            denseScore: denseScores[index] !== undefined ? denseScores[index] : 0.5,
+            bm25Score: bm25Scores[index] !== undefined ? bm25Scores[index] : 0.5
+        };
+    });
 }
 
 module.exports = {
