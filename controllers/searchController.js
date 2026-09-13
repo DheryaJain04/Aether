@@ -246,10 +246,11 @@ async function getSearchResults(query){
     // If both return 0, check cached papers in MongoDB
     if (!rawPapers || rawPapers.length === 0) {
         try {
+            const safePattern = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             const cached = await Paper.find({
                 $or: [
-                    { title: { $regex: query, $options: "i" } },
-                    { abstract: { $regex: query, $options: "i" } }
+                    { title: { $regex: safePattern, $options: "i" } },
+                    { abstract: { $regex: safePattern, $options: "i" } }
                 ]
             }).limit(25);
 
@@ -327,7 +328,9 @@ async function getSearchResults(query){
                 citedByCount: paper.cited_by_count || 0
             },
             { upsert: true }
-        ).catch(() => {});
+        ).catch(err => {
+            console.warn(`[Paper Cache] Failed to cache paper ${paperId}:`, err.message);
+        });
 
         return {
             id: paperId,
