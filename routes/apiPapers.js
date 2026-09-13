@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, optionalAuth } = require("../middleware/authMiddleware");
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -35,7 +35,7 @@ router.post(
     paperController.uploadPaper
 );
 
-router.get("/:id", paperController.getPaperData);
+router.get("/:id", optionalAuth, paperController.getPaperData);
 
 module.exports = router;
 

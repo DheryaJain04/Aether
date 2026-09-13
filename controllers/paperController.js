@@ -5,6 +5,7 @@ const aiService = require("../services/aiService");
 const citationService = require("../services/citationService");
 const ragService = require("../services/ragService");
 const Paper = require("../models/Paper");
+const ViewHistory = require("../models/ViewHistory");
 
 // Helper fn to reconstruct abstract from OpenAlex
 function reconstructAbstract(invertedIndex){
@@ -25,9 +26,25 @@ function reconstructAbstract(invertedIndex){
 
 const pdf = require("pdf-parse");
 
+function recordUserView(userId, paperIdString) {
+    if (!userId || !paperIdString) return;
+    Paper.findOne({ openAlexId: paperIdString }).then(p => {
+        if (p) {
+            ViewHistory.findOneAndUpdate(
+                { userId, paperId: p._id },
+                { viewedAt: new Date() },
+                { upsert: true }
+            ).catch(err => console.warn("[ViewHistory] Record error:", err.message));
+        }
+    }).catch(() => {});
+}
+
 // Normalizes OpenAlex data or custom uploaded paper for the React client
 async function getPaperData(req, res){
     const id = req.params.id;
+    if (req.user?.id) {
+        recordUserView(req.user.id, id);
+    }
 
     // Check MongoDB directly if it's a custom paper or cached paper
     if (id.startsWith("custom_")) {
