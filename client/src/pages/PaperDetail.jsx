@@ -103,6 +103,13 @@ function PaperDetail() {
         setSaved(toggleSavedPaper(paper));
     }
 
+    useEffect(() => {
+        const searchQueryParam = searchParams.get("q");
+        if (searchQueryParam) {
+            sessionStorage.setItem("aether_last_search_query", searchQueryParam);
+        }
+    }, [searchParams]);
+
     if (error) {
         return <main className="paper-status"><Link to="/search">← Back to search</Link><h1>Unable to load paper</h1><p>{error}</p></main>;
     }
@@ -111,11 +118,7 @@ function PaperDetail() {
         return <main className="paper-status"><p>Loading paper…</p></main>;
     }
 
-    const searchQueryParam = searchParams.get("q");
-    if (searchQueryParam) {
-        sessionStorage.setItem("aether_last_search_query", searchQueryParam);
-    }
-    const effectiveQuery = searchQueryParam || sessionStorage.getItem("aether_last_search_query") || "";
+    const effectiveQuery = searchParams.get("q") || sessionStorage.getItem("aether_last_search_query") || "";
     const citations = paper.citations || {};
 
     return (
