@@ -25,11 +25,18 @@ const viewHistorySchema =
 
 viewHistorySchema.index(
     {
-        userId:1,
-        viewedAt:-1
+        userId: 1,
+        viewedAt: -1
+    }
+);
+
+viewHistorySchema.index(
+    {
+        userId: 1,
+        paperId: 1
     },
     {
-        unique:true
+        unique: true
     }
 );
 
