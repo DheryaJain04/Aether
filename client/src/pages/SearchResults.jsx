@@ -47,6 +47,7 @@ function SearchResults() {
     const [loading, setLoading] = useState(!cachedInitial && Boolean(query));
     const [error, setError] = useState("");
     const [newQuery, setNewQuery] = useState(query);
+    const [visibleCount, setVisibleCount] = useState(10);
     const [stepIndex, setStepIndex] = useState(0);
     const [, setSaveVersion] = useState(0);
     const [uploading, setUploading] = useState(false);
@@ -100,6 +101,7 @@ function SearchResults() {
 
     useEffect(() => {
         setNewQuery(query);
+        setVisibleCount(10);
         if (!query) {
             setPapers([]);
             setLoading(false);
@@ -270,7 +272,7 @@ function SearchResults() {
             {error && <div className="empty-state error-state"><h2>Search unavailable</h2><p>{error}</p></div>}
             {!loading && !error && !query && <div className="empty-state"><h2>Start with a topic</h2><p>Search by subject, paper title, or author.</p></div>}
             {!loading && !error && query && displayedPapers.length === 0 && <div className="empty-state"><h2>No research papers found.</h2><p>Try searching with broader keywords.</p></div>}
-            {!loading && !error && displayedPapers.map(paper => (
+            {!loading && !error && displayedPapers.slice(0, visibleCount).map(paper => (
                 <PaperCard
                     key={paper.id}
                     paper={paper}
@@ -278,6 +280,29 @@ function SearchResults() {
                     onSavedChange={() => setSaveVersion(v => v + 1)}
                 />
             ))}
+
+            {!loading && !error && displayedPapers.length > visibleCount && (
+                <div style={{ textAlign: "center", margin: "2.5rem 0 1rem" }}>
+                    <button
+                        type="button"
+                        onClick={() => setVisibleCount(c => c + 10)}
+                        style={{
+                            background: "rgba(255, 255, 255, 0.05)",
+                            border: "1px solid rgba(255, 255, 255, 0.12)",
+                            color: "var(--text-primary, #f1f5f9)",
+                            padding: "0.85rem 2rem",
+                            borderRadius: "100px",
+                            fontSize: "0.95rem",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            backdropFilter: "blur(10px)",
+                            transition: "all 0.2s ease"
+                        }}
+                    >
+                        ✦ Load More Papers ({displayedPapers.length - visibleCount} remaining)
+                    </button>
+                </div>
+            )}
         </main>
     );
 }
