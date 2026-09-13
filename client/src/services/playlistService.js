@@ -1,4 +1,5 @@
 import { getSavedPapers, updateSavedPaper } from "./savedPapers";
+import { createCollection, addPaperToCollection, removePaperFromCollection } from "./api";
 
 function getPlaylistStorageKey() {
     try {
@@ -62,6 +63,11 @@ export function createPlaylist(name, icon = "📁", description = "") {
     };
     const next = [...playlists, newPlaylist];
     saveCustomPlaylists(next);
+
+    // Asynchronously sync with server if logged in
+    createCollection({ name: newPlaylist.name, description: newPlaylist.description })
+        .catch(() => {}); // Gracefully ignore offline or unauthenticated status
+
     return newPlaylist;
 }
 
