@@ -1,8 +1,9 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+require("dotenv").config(); // fallback for default cwd
 const express = require("express");
 const connectDB = require("./config/db");
 const cookieParser = require("cookie-parser");
-const path = require("path");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,7 +22,7 @@ const historyRouter = require("./routes/history");
 const cors = require("cors");
 const { rateLimit } = require("express-rate-limit");
 
-const reactBuildPath = path.join(__dirname, "client", "dist");
+const reactBuildPath = path.join(__dirname, "..", "client", "dist");
 
 // CORS configuration for cross-origin client support (if running separate dev server)
 const allowedOrigins = process.env.CLIENT_ORIGIN 

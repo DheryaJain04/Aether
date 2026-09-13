@@ -55,14 +55,23 @@ Aether/
 │   │   ├── context/     # AuthContext, LabContext
 │   │   ├── pages/       # Search, Paper Details, Saved Papers, Scholar Lab
 │   │   │   └── lab/     # Synthesis, Compare, Matrix, Gaps tools
-│   │   └── services/    # Client API services
-├── config/              # Database connection configuration
-├── controllers/         # Express controllers (search, paper, auth, lab)
-├── middleware/          # Authentication middleware
-├── models/              # Mongoose data models
-├── routes/              # Express API route declarations
-├── services/            # Backend AI, RAG, and scoring services
-└── app.js               # Express application entrypoint
+│   │   └── services/    # Client API services & storage
+│   ├── vite.config.js
+│   └── package.json
+│
+├── server/              # Node.js + Express Backend
+│   ├── config/          # Database connection configuration (db.js)
+│   ├── controllers/     # Express controllers (search, paper, auth, lab)
+│   ├── middleware/      # Authentication & validation middleware
+│   ├── models/          # Mongoose data models (User, Collection, Paper)
+│   ├── public/          # Static brand assets & styling fallbacks
+│   ├── routes/          # Express API route declarations
+│   ├── services/        # Backend AI, RAG, Lab pipeline, and scoring services
+│   └── app.js           # Express application entrypoint
+│
+├── .env.example         # Environment variables template
+├── package.json         # Root orchestration scripts
+└── README.md
 ```
 
 ---
@@ -75,10 +84,10 @@ Aether/
 - API Keys: Google Gemini API, Groq API (Optional: Local Ollama)
 
 ### Environment Setup
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (refer to `.env.example`):
 
 ```env
-PORT=5000
+PORT=3000
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 GEMINI_API_KEY=your_gemini_api_key
@@ -87,24 +96,26 @@ GROQ_API_KEY=your_groq_api_key
 
 ### Installation and Execution
 
-1. Install root backend dependencies:
+1. Install root dependencies:
 ```bash
 npm install
 ```
 
-2. Start the backend server:
+2. Start development servers:
 ```bash
 npm run dev
 ```
 
-3. In a separate terminal, install client dependencies and run the frontend:
+3. In a separate terminal, run the React client:
 ```bash
-cd client
-npm install
-npm run dev
+npm run client:dev
 ```
 
-The frontend will run on `http://localhost:5173` and the backend API on `http://localhost:5000`.
+4. For production build:
+```bash
+npm run client:build
+npm start
+```
 
 ---
 

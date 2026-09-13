@@ -7,10 +7,13 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node server/app.js",
+    "dev": "nodemon server/app.js",
+    "server": "node server/app.js",
+    "server:dev": "nodemon server/app.js",
     "client:dev": "npm --prefix client run dev",
-    "client:build": "npm --prefix client run build"
+    "client:build": "npm --prefix client run build",
+    "build": "npm run client:build"
   },
   "dependencies": {
     "@google/genai": "^2.12.0",
