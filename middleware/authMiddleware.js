@@ -1,5 +1,12 @@
 const jwt = require("jsonwebtoken");
 
+function getJwtSecret() {
+    if (!process.env.JWT_SECRET) {
+        throw new Error("FATAL: JWT_SECRET environment variable is not set.");
+    }
+    return process.env.JWT_SECRET;
+}
+
 function protect(req, res, next) {
     try {
         const token = req.cookies?.aether_token;
@@ -10,10 +17,7 @@ function protect(req, res, next) {
             });
         }
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET || "aether_super_secret_jwt_key_2026_scholar_ai"
-        );
+        const decoded = jwt.verify(token, getJwtSecret());
 
         req.user = {
             id: decoded.id,
@@ -25,6 +29,7 @@ function protect(req, res, next) {
         // Clear invalid or expired cookie
         res.clearCookie("aether_token", {
             httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
             sameSite: "lax"
         });
 
@@ -39,10 +44,7 @@ function optionalAuth(req, res, next) {
     try {
         const token = req.cookies?.aether_token;
         if (token) {
-            const decoded = jwt.verify(
-                token,
-                process.env.JWT_SECRET || "aether_super_secret_jwt_key_2026_scholar_ai"
-            );
+            const decoded = jwt.verify(token, getJwtSecret());
             req.user = {
                 id: decoded.id,
                 email: decoded.email

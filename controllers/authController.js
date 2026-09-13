@@ -6,7 +6,10 @@ const COOKIE_NAME = "aether_token";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 function getJwtSecret() {
-    return process.env.JWT_SECRET || "aether_super_secret_jwt_key_2026_scholar_ai";
+    if (!process.env.JWT_SECRET) {
+        throw new Error("FATAL: JWT_SECRET environment variable is not set. Refusing to start with an insecure configuration.");
+    }
+    return process.env.JWT_SECRET;
 }
 
 function validatePasswordPolicy(password) {
