@@ -355,6 +355,7 @@ export default function SavedPapers() {
                                     <PaperCard
                                         paper={paper}
                                         onSavedChange={reloadData}
+                                        showScore={false}
                                     />
                                     {/* Playlist Assignment Bar */}
                                     <div className="paper-playlist-toolbar">

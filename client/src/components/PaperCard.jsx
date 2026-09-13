@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { isPaperSaved, toggleSavedPaper } from "../services/savedPapers";
 import "./PaperCard.css";
 
-function PaperCard({ paper, searchQuery, onSavedChange }){
+function PaperCard({ paper, searchQuery, onSavedChange, showScore = true }){
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -51,28 +51,30 @@ function PaperCard({ paper, searchQuery, onSavedChange }){
                         {paper.authors && <p className="authors">{paper.authors}</p>}
                     </div>
 
-                    {/* SCORE BADGE - NEATLY POSITIONED INSIDE THE CARD BOUNDARY */}
-                    <div className="card-score-container">
-                        <div className="card-score-box">
-                            <span className="score-box-label">Aether Score</span>
-                            <strong className="score-box-val">
-                                {typeof score === "number" ? `${Math.round(score)}%` : score}
-                            </strong>
+                    {/* SCORE BADGE - ONLY WHEN SHOW_SCORE IS TRUE */}
+                    {showScore && (
+                        <div className="card-score-container">
+                            <div className="card-score-box">
+                                <span className="score-box-label">Aether Score</span>
+                                <strong className="score-box-val">
+                                    {typeof score === "number" ? `${Math.round(score)}%` : score}
+                                </strong>
+                            </div>
+                            <button
+                                type="button"
+                                className={`breakdown-toggle-btn ${showBreakdown ? "is-active" : ""}`}
+                                onClick={() => setShowBreakdown((prev) => !prev)}
+                                aria-expanded={showBreakdown}
+                                title="View multi-factor score breakdown"
+                            >
+                                {showBreakdown ? "Hide Factors ▴" : "Factors ▾"}
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            className={`breakdown-toggle-btn ${showBreakdown ? "is-active" : ""}`}
-                            onClick={() => setShowBreakdown((prev) => !prev)}
-                            aria-expanded={showBreakdown}
-                            title="View multi-factor score breakdown"
-                        >
-                            {showBreakdown ? "Hide Factors ▴" : "Factors ▾"}
-                        </button>
-                    </div>
+                    )}
                 </div>
 
                 {/* EXPANDABLE MULTI-FACTOR BREAKDOWN INSIDE CARD */}
-                {showBreakdown && (
+                {showScore && showBreakdown && (
                     <div className="card-factors-drawer">
                         <div className="factors-grid">
                             <div className="factor-pill">
