@@ -352,7 +352,7 @@ function AddPapersModal({ onClose }) {
 
 // ── Bench Panel ────────────────────────────────────────────────
 function BenchPanel({ onAddPapers }) {
-    const { bench, addToBench, removeFromBench, clearBench, BENCH_CAP } = useLab();
+    const { bench, addToBench, reorderBench, removeFromBench, clearBench, BENCH_CAP } = useLab();
     const [dragIndex, setDragIndex] = useState(null);
     const [dragOverIndex, setDragOverIndex] = useState(null);
     const [localBench, setLocalBench] = useState(bench);
@@ -381,6 +381,7 @@ function BenchPanel({ onAddPapers }) {
         const [moved] = reordered.splice(dragIndex, 1);
         reordered.splice(index, 0, moved);
         setLocalBench(reordered);
+        reorderBench(reordered);
         setDragIndex(null);
         setDragOverIndex(null);
     }

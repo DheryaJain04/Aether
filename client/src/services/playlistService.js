@@ -1,6 +1,15 @@
-import { getSavedPapers } from "./savedPapers";
+import { getSavedPapers, updateSavedPaper } from "./savedPapers";
 
-const PLAYLISTS_STORAGE_KEY = "aether-scholar-playlists";
+function getPlaylistStorageKey() {
+    try {
+        const raw = typeof localStorage !== "undefined" ? localStorage.getItem("aether_current_user") : null;
+        if (raw) {
+            const user = JSON.parse(raw);
+            if (user?.id) return `aether-scholar-playlists_${user.id}`;
+        }
+    } catch {}
+    return "aether-scholar-playlists";
+}
 
 const DEFAULT_PLAYLISTS = [
     {
@@ -21,9 +30,10 @@ const DEFAULT_PLAYLISTS = [
 
 export function getCustomPlaylists() {
     try {
-        const stored = localStorage.getItem(PLAYLISTS_STORAGE_KEY);
+        const key = getPlaylistStorageKey();
+        const stored = localStorage.getItem(key);
         if (!stored) {
-            localStorage.setItem(PLAYLISTS_STORAGE_KEY, JSON.stringify(DEFAULT_PLAYLISTS));
+            localStorage.setItem(key, JSON.stringify(DEFAULT_PLAYLISTS));
             return DEFAULT_PLAYLISTS;
         }
         return JSON.parse(stored);
@@ -34,7 +44,7 @@ export function getCustomPlaylists() {
 
 export function saveCustomPlaylists(playlists) {
     try {
-        localStorage.setItem(PLAYLISTS_STORAGE_KEY, JSON.stringify(playlists));
+        localStorage.setItem(getPlaylistStorageKey(), JSON.stringify(playlists));
     } catch (e) {
         console.error("Failed to save playlists to localStorage", e);
     }
@@ -61,18 +71,12 @@ export function deletePlaylist(playlistId) {
 
     // Also remove this playlist from any saved papers
     const saved = getSavedPapers();
-    const updated = saved.map(paper => {
+    saved.forEach(paper => {
         if (Array.isArray(paper.playlists) && paper.playlists.includes(playlistId)) {
-            return {
-                ...paper,
-                playlists: paper.playlists.filter(id => id !== playlistId)
-            };
+            const updatedLists = paper.playlists.filter(id => id !== playlistId);
+            updateSavedPaper(paper.id, { playlists: updatedLists });
         }
-        return paper;
     });
-    try {
-        localStorage.setItem("aether-saved-papers", JSON.stringify(updated));
-    } catch (e) {}
 }
 
 export function renamePlaylist(playlistId, newName) {

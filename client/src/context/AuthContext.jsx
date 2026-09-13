@@ -15,10 +15,16 @@ export function AuthProvider({ children }) {
                 const data = await getCurrentUser();
                 if (active && data.user) {
                     setUser(data.user);
+                    try {
+                        localStorage.setItem("aether_current_user", JSON.stringify(data.user));
+                    } catch {}
                 }
             } catch {
                 if (active) {
                     setUser(null);
+                    try {
+                        localStorage.removeItem("aether_current_user");
+                    } catch {}
                 }
             } finally {
                 if (active) {
@@ -38,6 +44,10 @@ export function AuthProvider({ children }) {
         const data = await loginUser({ email, password });
         if (data.user) {
             setUser(data.user);
+            try {
+                localStorage.setItem("aether_current_user", JSON.stringify(data.user));
+                window.dispatchEvent(new Event("aether-user-changed"));
+            } catch {}
         }
         return data.user;
     }
@@ -46,6 +56,10 @@ export function AuthProvider({ children }) {
         const data = await signupUser({ name, email, password });
         if (data.user) {
             setUser(data.user);
+            try {
+                localStorage.setItem("aether_current_user", JSON.stringify(data.user));
+                window.dispatchEvent(new Event("aether-user-changed"));
+            } catch {}
         }
         return data.user;
     }
@@ -55,6 +69,10 @@ export function AuthProvider({ children }) {
             await logoutUser();
         } finally {
             setUser(null);
+            try {
+                localStorage.removeItem("aether_current_user");
+                window.dispatchEvent(new Event("aether-user-changed"));
+            } catch {}
         }
     }
 

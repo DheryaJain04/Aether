@@ -1,18 +1,30 @@
-const STORAGE_KEY = "aether-saved-papers";
+function getStorageKey() {
+    try {
+        const raw = typeof localStorage !== "undefined" ? localStorage.getItem("aether_current_user") : null;
+        if (raw) {
+            const user = JSON.parse(raw);
+            if (user?.id) return `aether-saved-papers_${user.id}`;
+        }
+    } catch {}
+    return "aether-saved-papers";
+}
 
 export function getSavedPapers(){
     try{
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const key = getStorageKey();
+        return JSON.parse(localStorage.getItem(key) || "[]");
     }catch{
         return [];
     }
 }
 
 export function isPaperSaved(id){
+    if (!id) return false;
     return getSavedPapers().some(paper => paper.id === id);
 }
 
 export function toggleSavedPaper(paper){
+    if (!paper || !paper.id) return false;
     const saved = getSavedPapers();
     const alreadySaved = saved.some(item => item.id === paper.id);
 
@@ -22,7 +34,14 @@ export function toggleSavedPaper(paper){
     } else {
         const originTopic = paper.originTopic || paper.searchQuery || (typeof sessionStorage !== "undefined" ? sessionStorage.getItem("aether_last_search_query") : "") || "";
         const entry = {
-            ...paper,
+            id: paper.id,
+            title: paper.title || "Untitled Research Paper",
+            authors: paper.authors || "Scholarly Contributor",
+            year: paper.year || new Date().getFullYear(),
+            journal: paper.journal || "Academic Source",
+            abstract: paper.abstract || "",
+            doi: paper.doi || null,
+            openAccess: Boolean(paper.openAccess),
             originTopic,
             playlists: Array.isArray(paper.playlists) ? paper.playlists : [],
             savedAt: new Date().toISOString()
@@ -31,7 +50,7 @@ export function toggleSavedPaper(paper){
     }
 
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        localStorage.setItem(getStorageKey(), JSON.stringify(next));
         if (typeof window !== "undefined") {
             window.dispatchEvent(new Event("aether-saved-updated"));
         }
@@ -51,7 +70,7 @@ export function updateSavedPaper(paperId, updates) {
         return p;
     });
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        localStorage.setItem(getStorageKey(), JSON.stringify(next));
         if (typeof window !== "undefined") {
             window.dispatchEvent(new Event("aether-saved-updated"));
         }

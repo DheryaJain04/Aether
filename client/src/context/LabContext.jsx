@@ -11,12 +11,23 @@ export const TOOL_LIMITS = {
 // Bench hard cap — max papers a user can hold on the workbench at once
 export const BENCH_CAP = 5;
 
-const STORAGE_KEY = "aether_lab_bench";
+function getBenchStorageKey() {
+    try {
+        const raw = typeof localStorage !== "undefined" ? localStorage.getItem("aether_current_user") : null;
+        if (raw) {
+            const user = JSON.parse(raw);
+            if (user?.id) return `aether_lab_bench_${user.id}`;
+        }
+    } catch {}
+    return "aether_lab_bench";
+}
+
 const RESULTS_STORAGE_KEY = "aether_lab_tool_results";
 
 function loadBenchFromStorage() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const key = getBenchStorageKey();
+        const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : [];
     } catch {
         return [];
@@ -38,10 +49,19 @@ export function LabProvider({ children }) {
     const [bench, setBench] = useState(loadBenchFromStorage);
     const [toolResults, setToolResults] = useState(loadResultsFromStorage);
 
+    // Reload bench when active user changes (login / logout)
+    useEffect(() => {
+        function handleUserChange() {
+            setBench(loadBenchFromStorage());
+        }
+        window.addEventListener("aether-user-changed", handleUserChange);
+        return () => window.removeEventListener("aether-user-changed", handleUserChange);
+    }, []);
+
     // Persist bench to localStorage whenever it changes
     useEffect(() => {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(bench));
+            localStorage.setItem(getBenchStorageKey(), JSON.stringify(bench));
         } catch {
             // Storage quota exceeded — fail silently
         }
@@ -62,6 +82,12 @@ export function LabProvider({ children }) {
             if (current.some(p => p.id === paper.id)) return current;
             return [...current, paper];
         });
+    }, []);
+
+    const reorderBench = useCallback((newBench) => {
+        if (Array.isArray(newBench)) {
+            setBench(newBench.slice(0, BENCH_CAP));
+        }
     }, []);
 
     const removeFromBench = useCallback((paperId) => {
@@ -119,6 +145,7 @@ export function LabProvider({ children }) {
         <LabContext.Provider value={{
             bench,
             addToBench,
+            reorderBench,
             removeFromBench,
             clearBench,
             isOnBench,
