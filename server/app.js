@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 require("dotenv").config(); // fallback for default cwd
 const express = require("express");
@@ -7,6 +8,9 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Enable reverse proxy trust for cloud platforms (Render, Railway, Heroku)
+app.set("trust proxy", 1);
 
 connectDB();
 
@@ -93,9 +97,16 @@ app.use("/paper", aiLimiter, paperRouter);
 
 // React SPA Client-Side Routing: Send index.html for all frontend routes
 app.get("{*path}", (req, res) => {
-    res.sendFile(path.join(reactBuildPath, "index.html"));
+    const indexPath = path.join(reactBuildPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(503).json({
+            error: "Frontend application build not found. Please run 'npm run build'."
+        });
+    }
 });
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log(`App is running on port ${port}`);
 });

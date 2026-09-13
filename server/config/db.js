@@ -9,7 +9,7 @@ async function connectDB(){
         // Ignore if restricted in certain runtime environments
     }
 
-    const primaryUri = process.env.MONGODB_URI;
+    const primaryUri = process.env.MONGODB_URI || process.env.MONGO_URI;
     const localUri = "mongodb://127.0.0.1:27017/aether";
 
     try {
