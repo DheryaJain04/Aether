@@ -32,7 +32,10 @@ async function connectDB(){
         });
         console.log("MongoDB connected successfully (Local Instance: mongodb://127.0.0.1:27017/aether)");
     } catch (localErr) {
-        console.error("Local MongoDB connection also failed:", localErr.message);
+        console.error("FATAL: Could not connect to any MongoDB database (Atlas or Local). Database operations will fail until connection is established.");
+        if (process.env.NODE_ENV === "production") {
+            console.error("Exiting process due to database connection failure in production environment.");
+        }
     }
 }
 
