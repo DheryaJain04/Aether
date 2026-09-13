@@ -240,10 +240,47 @@ async function deleteAccount(req, res) {
     }
 }
 
+// PUT /api/auth/password - Change password for authenticated user
+async function changePassword(req, res) {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: "Both current password and new password are required." });
+        }
+
+        const passwordError = validatePasswordPolicy(newPassword);
+        if (passwordError) {
+            return res.status(400).json({ error: passwordError });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Current password is incorrect." });
+        }
+
+        const saltRounds = 10;
+        user.passwordHash = await bcrypt.hash(newPassword, saltRounds);
+        await user.save();
+
+        return res.json({ message: "Password updated successfully." });
+    } catch (err) {
+        console.error("Change password error:", err.message);
+        return res.status(500).json({ error: "Failed to update password." });
+    }
+}
+
 module.exports = {
     signup,
     login,
     logout,
     getMe,
-    deleteAccount
+    deleteAccount,
+    changePassword
 };
