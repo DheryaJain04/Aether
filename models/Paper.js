@@ -108,6 +108,8 @@ const paperSchema =
         }
     );
 
+paperSchema.index({ title: "text", abstract: "text" });
+
 module.exports =
     mongoose.model(
         "Paper",
