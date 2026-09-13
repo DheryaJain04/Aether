@@ -3,14 +3,37 @@
 
 const { runLabToolPipeline, TOOL_LIMITS } = require("../services/lab/labPipeline");
 
+function validateLabPapers(papers) {
+    if (!Array.isArray(papers)) {
+        return "Papers payload must be an array.";
+    }
+    if (papers.length === 0) {
+        return "No papers provided. Add papers to the bench first.";
+    }
+    if (papers.length < 2) {
+        return "This lab tool requires at least 2 papers.";
+    }
+    if (papers.length > 10) {
+        return "A maximum of 10 papers can be evaluated at once.";
+    }
+    for (let i = 0; i < papers.length; i++) {
+        const p = papers[i];
+        if (!p || typeof p !== "object") {
+            return `Paper item at index ${i} is invalid.`;
+        }
+        if (!p.id && !p.title) {
+            return `Paper at index ${i} must have an id or title.`;
+        }
+    }
+    return null;
+}
+
 async function synthesize(req, res) {
     try {
         const { papers = [], options = {} } = req.body;
-        if (!papers.length) {
-            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
-        }
-        if (papers.length < 2) {
-            return res.status(400).json({ error: "Literature synthesis requires at least 2 papers." });
+        const validationError = validateLabPapers(papers);
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
         }
 
         const result = await runLabToolPipeline("synthesis", papers, options);
@@ -24,11 +47,9 @@ async function synthesize(req, res) {
 async function compare(req, res) {
     try {
         const { papers = [], options = {} } = req.body;
-        if (!papers.length) {
-            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
-        }
-        if (papers.length < 2) {
-            return res.status(400).json({ error: "Paper comparison requires at least 2 papers." });
+        const validationError = validateLabPapers(papers);
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
         }
 
         const result = await runLabToolPipeline("compare", papers, options);
@@ -42,11 +63,9 @@ async function compare(req, res) {
 async function matrix(req, res) {
     try {
         const { papers = [], options = {} } = req.body;
-        if (!papers.length) {
-            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
-        }
-        if (papers.length < 2) {
-            return res.status(400).json({ error: "Evidence matrix requires at least 2 papers." });
+        const validationError = validateLabPapers(papers);
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
         }
 
         const result = await runLabToolPipeline("matrix", papers, options);
@@ -60,11 +79,9 @@ async function matrix(req, res) {
 async function gaps(req, res) {
     try {
         const { papers = [], options = {} } = req.body;
-        if (!papers.length) {
-            return res.status(400).json({ error: "No papers provided. Add papers to the bench first." });
-        }
-        if (papers.length < 2) {
-            return res.status(400).json({ error: "Gap detection requires at least 2 papers." });
+        const validationError = validateLabPapers(papers);
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
         }
 
         const result = await runLabToolPipeline("gaps", papers, options);
