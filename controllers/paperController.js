@@ -179,64 +179,6 @@ async function uploadPaper(req, res) {
     }
 }
 
-// Loads paper page (legacy EJS fallback)
-async function showPaper(req,res){
-    try{
-        const id = req.params.id;
-        const url = `https://api.openalex.org/works/${id}`;
-
-        const response = await axios.get(url, {
-            headers: { "User-Agent": "AetherScholar/1.0 (mailto:scholar@aether.ai)" },
-            timeout: 5000
-        });
-
-        const paper = response.data;
-        const citations = citationService.generateCitations(paper);
-        const abstract = reconstructAbstract(
-            paper.abstract_inverted_index
-        );
-
-        const searchQuery = req.query.q || "";
-
-        const authorNames = paper.authorships.map(
-            author=>author.author.display_name
-        );
-
-        const displayedAuthors =
-            authorNames.slice(0,3).join(" • ") +
-            (authorNames.length>3
-                ? ` +${authorNames.length-3} more`
-                : "");
-
-        const paperData = {
-            id: paper.id.split("/").pop(),
-            title: paper.display_name,
-            authors: displayedAuthors,
-            journal:
-                paper.primary_location?.source?.display_name ||
-                "Research Paper",
-            year: paper.publication_year,
-            doi: paper.doi
-                ? paper.doi.replace("https://doi.org/","")
-                : null,
-            openAccess: paper.open_access?.is_oa,
-            abstract,
-            summary:"Generating Aether Summary...",
-            keywords:["Loading..."],
-            citations
-        };
-
-        res.render("paper",{
-            paper:paperData,
-            searchQuery
-        });
-
-    }catch(err){
-        console.log(err);
-        res.send("Error loading paper.");
-    }
-}
-
 // Generates aether summary
 async function generateSummary(req,res){
     const id = req.params.id;
@@ -483,7 +425,6 @@ async function chatWithPaper(req,res){
 }
 
 module.exports = {
-    showPaper,
     getPaperData,
     generateSummary,
     generateKeywords,

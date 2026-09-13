@@ -352,22 +352,6 @@ async function getSearchResults(query){
     return papers;
 }
 
-async function searchPapers(req, res){
-    try {
-        const query = req.query.q;
-
-        if (!query || !query.trim()) {
-            return res.render("search", { query: "", papers: [] });
-        }
-
-        const papers = await getSearchResults(query);
-        res.render("search", { query, papers });
-    } catch (err) {
-        console.error("Search error:", err);
-        res.status(500).send("Something went wrong.");
-    }
-}
-
 async function searchPapersAPI(req, res){
     try {
         const query = req.query.q;
@@ -390,6 +374,6 @@ async function searchPapersAPI(req, res){
 }
 
 module.exports = {
-    searchPapers,
+    searchPapers: searchPapersAPI,
     searchPapersAPI
 };
