@@ -10,8 +10,30 @@ import SavedPapersLink from "../components/SavedPapersLink";
 import UserMenu from "../components/UserMenu";
 import "./SearchResults.css";
 
-// In-memory cache so navigating back from a paper never reloads or reranks
+// In-memory bounded cache with 5-minute TTL so navigating back from a paper never reloads or reranks
+const MAX_SEARCH_CACHE = 15;
+const SEARCH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const searchCache = new Map();
+
+function getCachedSearch(key) {
+    if (!key) return null;
+    const entry = searchCache.get(key);
+    if (!entry) return null;
+    if (Date.now() - entry.timestamp > SEARCH_CACHE_TTL) {
+        searchCache.delete(key);
+        return null;
+    }
+    return entry.data;
+}
+
+function setCachedSearch(key, data) {
+    if (!key || !data) return;
+    if (searchCache.size >= MAX_SEARCH_CACHE) {
+        const oldestKey = searchCache.keys().next().value;
+        searchCache.delete(oldestKey);
+    }
+    searchCache.set(key, { data, timestamp: Date.now() });
+}
 
 function SearchResults() {
     const { isAuthenticated } = useAuth();
@@ -20,7 +42,7 @@ function SearchResults() {
     const query = (searchParams.get("q") || "").trim();
 
     // Initialize papers from cache if returning from paper page
-    const cachedInitial = searchCache.get(query);
+    const cachedInitial = getCachedSearch(query);
     const [papers, setPapers] = useState(cachedInitial || []);
     const [loading, setLoading] = useState(!cachedInitial && Boolean(query));
     const [error, setError] = useState("");
@@ -85,31 +107,17 @@ function SearchResults() {
         }
 
         // Persist query so breadcrumbs on paper pages can navigate back to exact search
-        sessionStorage.setItem("aether_last_search_query", query);
+        try {
+            sessionStorage.setItem("aether_last_search_query", query);
+        } catch {}
 
-        // Fast Cache Hit: Don't reload or rerank if user came back from a paper!
-        const cached = searchCache.get(query);
+        // Fast Cache Hit: Don't reload or rerank if user came back from a paper within TTL
+        const cached = getCachedSearch(query);
         if (cached && Array.isArray(cached) && cached.length > 0) {
             setPapers(cached);
             setLoading(false);
             setError("");
             return;
-        }
-
-        try {
-            const sessionData = sessionStorage.getItem(`aether_search_${query}`);
-            if (sessionData) {
-                const parsed = JSON.parse(sessionData);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    searchCache.set(query, parsed);
-                    setPapers(parsed);
-                    setLoading(false);
-                    setError("");
-                    return;
-                }
-            }
-        } catch (e) {
-            // Ignore session storage errors
         }
 
         let isMounted = true;
@@ -120,10 +128,7 @@ function SearchResults() {
             .then((data) => {
                 if (!isMounted) return;
                 const results = Array.isArray(data) ? data : (data.papers || []);
-                searchCache.set(query, results);
-                try {
-                    sessionStorage.setItem(`aether_search_${query}`, JSON.stringify(results));
-                } catch (e) {}
+                setCachedSearch(query, results);
                 setPapers(results);
                 setLoading(false);
             })
