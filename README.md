@@ -2,7 +2,7 @@
 
 ### An AI-powered One-Stop Research workspace for academic research
 
-[Live Demo](https://aether-sand-five.vercel.app/) · [GitHub](https://github.com/DheryaJain04/Aether)
+[Live Demo](https://aether-scholar.vercel.app/) · [GitHub](https://github.com/DheryaJain04/Aether)
 > <img width="782" height="404" alt="image" src="https://github.com/user-attachments/assets/0e9533e5-3de8-4590-af44-f412a140e7e4" />
 
 Are you also tired of opening 100 tabs and shifting between them tirelessly whole night long? If yes, then Aether is your solution!
