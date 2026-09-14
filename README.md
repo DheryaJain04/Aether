@@ -357,5 +357,5 @@ The project has been an exploration of full-stack development and applied AI —
 ---
 
 <p align="center">
-  Built with curiosity and experimentation.
+  **Built with curiosity and experimentation <3**
 </p>
